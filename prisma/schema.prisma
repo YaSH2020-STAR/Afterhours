@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Waitlist + onboarding intake. For production Postgres, change provider/url and run migrate.
+model WaitlistSubmission {
+  id       String @id @default(cuid())
+  email    String @unique
+  city     String?
+  timezone String?
+
+  /// JSON string[] e.g. ["moved_new_city","remote_hybrid"]
+  situationsJson String?
+
+  /// JSON string[] e.g. ["weekday_evenings","weekend_mornings"]
+  availabilityJson String?
+
+  /// JSON string[] optional affinity tags
+  affinityJson String?
+
+  comfortNotes String?
+  podVibe      String?
+
+  consentAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

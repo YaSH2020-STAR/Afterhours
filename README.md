@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AfterHours
 
-## Getting Started
+Production-ready marketing site and waitlist for **AfterHours** — focused on **young working professionals (~20–30) who recently moved to a new city**; small pods, recurring rituals, bounded seasons (Next.js App Router, Prisma, Zod).
 
-First, run the development server:
+## Local development
 
 ```bash
+npm install
+# .env is created from .env.example — SQLite by default
+npm run db:push
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | Prisma connection string. Default `file:./dev.db` (SQLite under `prisma/`). |
+| `NEXT_PUBLIC_SITE_URL` | Canonical site URL for metadata, sitemap, and robots (e.g. `https://your-domain.com`). |
 
-## Learn More
+## Database
 
-To learn more about Next.js, take a look at the following resources:
+- **Development:** SQLite (`file:./dev.db`) — zero setup.
+- **Production (recommended):** Use **PostgreSQL** (e.g. [Neon](https://neon.tech), [Supabase](https://supabase.com), or Docker via `docker-compose.yml`). Update `prisma/schema.prisma` `provider` to `postgresql`, set `DATABASE_URL`, then run `npx prisma migrate dev` (or `db push` for prototyping).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+SQLite on serverless hosts (e.g. Vercel) is **not** suitable for persistent writes — use Postgres.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
+| Script | Command |
+|--------|---------|
+| Dev server | `npm run dev` |
+| Production build | `npm run build` |
+| Start production | `npm start` |
+| Lint | `npm run lint` |
+| Prisma Studio | `npm run db:studio` |
+| Push schema (dev) | `npm run db:push` |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy (e.g. Vercel)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Connect the repo; set `NEXT_PUBLIC_SITE_URL` and Postgres `DATABASE_URL`.
+2. Build command: `npm run build` (runs `prisma generate` automatically).
+3. Ensure the Prisma client is generated on each build (`postinstall` + build script).
+
+## API
+
+- `POST /api/waitlist` — JSON body validated with Zod; stores intake in `WaitlistSubmission`. Duplicate emails return a friendly success message (no error leak).
+
+## Hackathon / judge demo (Phoenix, AZ)
+
+- **Browse sample rows:** [http://localhost:3000/demo/phoenix](http://localhost:3000/demo/phoenix) (or your deployed URL + `/demo/phoenix`).
+- **Data file:** `src/data/phoenix-demo-samples.ts` — 10 fictional Greater Phoenix profiles (emails `@demo.afterhours.example`).
+- **Load into SQLite:** `npm run db:seed` — inserts those rows via Prisma (deletes prior demo emails first). Then use **Prisma Studio** (`npm run db:studio`) to show the table live.
+
+## License
+
+Private / your team — adjust as needed.
