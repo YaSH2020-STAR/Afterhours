@@ -12,19 +12,19 @@ Small weekly pods, bounded seasons — Next.js, Prisma, **PostgreSQL** (Docker l
 
 ### Netlify
 
-1. Create a **Postgres** database (e.g. [Neon](https://neon.tech)) and copy the connection string.
-2. In [Netlify](https://app.netlify.com): **Add new site** → Import from Git → pick this repo.  
-   Build settings are in `netlify.toml` (migrations run before `next build`).
-3. **Site configuration → Environment variables** (minimum):
-   - `DATABASE_URL` — Postgres URL (with SSL for Neon)
-   - `AUTH_SECRET` — long random string
-   - `AUTH_URL` — `https://<your-site>.netlify.app`
+**`DATABASE_URL` is required for the build.** The build runs `prisma migrate deploy`; without `DATABASE_URL` in Netlify’s environment, the build fails with `P1012` / “Environment variable not found: DATABASE_URL”.
+
+1. Create a **Postgres** database (e.g. [Neon](https://neon.tech)) and copy the connection string (include `?sslmode=require` if your provider expects it).
+2. In [Netlify](https://app.netlify.com): **Add new site** → Import from Git → this repo.
+3. **Before** triggering a deploy: **Site configuration → Environment variables** → add at least:
+   - **`DATABASE_URL`** — your Postgres URL (required for build)
+   - `AUTH_SECRET` — long random string (`openssl rand -base64 32`)
+   - `AUTH_URL` — `https://<your-site>.netlify.app` (use your real Netlify URL after first deploy, or set after you know it)
    - `NEXT_PUBLIC_SITE_URL` — same as `AUTH_URL`
-   - Optional: `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `EMAIL_SERVER`, `DEMO_LOGIN_*` for sign-in (see `.env.example`)
-4. Deploy. After first deploy, run **seed** once from your machine (or CI) with `DATABASE_URL` pointing at production:  
-   `npx tsx prisma/seed.ts`  
-   Or use Neon SQL editor / Prisma Studio against prod.
-5. Set `AFTERHOURS_AUTO_SEED_DISCOVERY=false` on Netlify if you do not want demo discovery data auto-upserted in production.
+   - Optional: `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `EMAIL_SERVER`, `DEMO_LOGIN_*` (see `.env.example`)
+4. **Deploy** (or **Clear cache and deploy** if you already failed once).
+5. After a successful deploy, run **seed** once against production DB (from your machine with prod `DATABASE_URL`): `npx tsx prisma/seed.ts`
+6. Optional: `AFTERHOURS_AUTO_SEED_DISCOVERY=false` on Netlify for production if you don’t want demo discovery auto-seed.
 
 ### Sign-in (what “anyone” means)
 

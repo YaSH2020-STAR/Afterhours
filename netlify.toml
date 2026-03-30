@@ -1,7 +1,7 @@
 # Next.js on Netlify — https://docs.netlify.com/frameworks/next-js/overview/
-# Requires DATABASE_URL (e.g. Neon) in Netlify env. Migrations run before the Next build.
+# Set DATABASE_URL in Netlify *before* building (Site → Environment variables).
 [build]
-  command = "npx prisma migrate deploy && npm run build"
+  command = "bash scripts/netlify-build.sh"
 
 [build.environment]
   NODE_VERSION = "20"
