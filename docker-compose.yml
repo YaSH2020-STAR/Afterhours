@@ -1,16 +1,10 @@
-# Optional: Postgres for production-like local dev or self-hosted deploy.
-# Usage: docker compose up -d
-# Then set DATABASE_URL in .env to:
-# postgresql://postgres:postgres@localhost:5432/afterhours?schema=public
-# and change prisma/schema.prisma datasource provider to "postgresql", then prisma db push.
-
 services:
-  db:
+  postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: afterhours
+      POSTGRES_PASSWORD: afterhours
       POSTGRES_DB: afterhours
     ports:
       - "5432:5432"

@@ -9,74 +9,37 @@ export function HomeSections() {
       <section className="bg-[radial-gradient(ellipse_80%_60%_at_100%_0%,color-mix(in_srgb,var(--accent)_18%,transparent),transparent_55%)] px-4 py-12 sm:px-6 sm:py-16">
         <div className="mx-auto grid max-w-[1100px] gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-ah-warm">
-              For young professionals (20–30) in a new city
-            </p>
-            <h1 className="font-display text-3xl font-bold leading-tight tracking-tight text-ah-ink sm:text-4xl lg:text-[2.85rem]">
-              A <em className="italic text-ah-accent">third rhythm</em> between work and home—not another
-              app to perform on.
+            <h1 className="font-display text-3xl font-bold leading-tight text-ah-ink sm:text-4xl">
+              AfterHours — same pod, same week, one season at a time.
             </h1>
-            <p className="mt-4 max-w-[52ch] text-lg text-ah-muted">
-              You moved for the job—then the cycle became sleep, work, repeat. AfterHours matches{" "}
-              <strong className="text-ah-ink">young working adults who recently relocated</strong> into small{" "}
-              <strong className="text-ah-ink">pods</strong>: the same people, the same weekly cadence, for a
-              bounded season—so familiarity grows without “making friends fast” or scrolling strangers like a
-              catalog.
-            </p>
+            <p className="mt-3 text-ah-muted">Not a feed · not events-as-performance · small groups, weekly.</p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                href="/onboarding"
+                href="/auth/signin"
                 className="rounded-lg border-2 border-ah-accent bg-ah-accent px-5 py-2.5 font-semibold text-white hover:bg-ah-accent-soft"
               >
-                Start full intake
+                Sign in
               </Link>
               <Link
-                href="#why-when-how"
-                className="rounded-lg border-2 border-ah-accent bg-transparent px-5 py-2.5 font-semibold text-ah-accent hover:bg-[color-mix(in_srgb,var(--accent)_10%,transparent)]"
+                href="/waitlist"
+                className="rounded-lg border-2 border-ah-border px-5 py-2.5 font-semibold text-ah-ink hover:border-ah-accent"
               >
-                Why, when &amp; how
+                Waitlist
               </Link>
             </div>
-            <p className="mt-4 max-w-[48ch] text-sm text-ah-muted">
-              Not dating. Not hiring. Not event spam. Built for dignity, continuity, and real-life
-              co-presence in a new city.
-            </p>
           </div>
-          <aside
-            className="rounded-xl border border-ah-border bg-ah-card p-6 shadow-[0_12px_40px_color-mix(in_srgb,var(--ink)_8%,transparent)]"
-            aria-label="What you might do in one season"
-          >
-            <h2 className="font-display text-xl font-semibold text-ah-ink">In one season you might…</h2>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-ah-muted">
-              <li>
-                Share a weekly 90-minute <span className="font-semibold text-ah-ink">parallel hour</span>{" "}
-                (quiet work, reading, or sketching—together, not “networking”).
-              </li>
-              <li>
-                Rotate a <span className="font-semibold text-ah-ink">micro-host</span> who picks a
-                low-stakes ritual: walk, pantry snack swap, or one-question roundtable.
-              </li>
-              <li>
-                Close the arc with a single optional “open table” meal—same pod, no new faces.
-              </li>
-            </ul>
+          <aside className="rounded-xl border border-ah-border bg-ah-card p-5 text-sm text-ah-muted">
+            One weekly slot · same ~6 people · 6 weeks — intro → meetups → close.
           </aside>
         </div>
       </section>
 
       <section id="why-when-how" className="px-4 py-14 sm:px-6" aria-labelledby="wwh-title">
         <div className="mx-auto max-w-[1100px]">
-          <h2
-            id="wwh-title"
-            className="font-display text-center text-2xl font-bold tracking-tight text-ah-ink sm:text-3xl"
-          >
-            Why people use it, when it fits, how it works, what changes
+          <h2 id="wwh-title" className="font-display text-center text-xl font-bold text-ah-ink sm:text-2xl">
+            Why / when / how
           </h2>
-          <p className="mx-auto mt-3 max-w-[52ch] text-center text-lg text-ah-muted">
-            AfterHours is for life between work and sleep in a place you’re still learning—when you want{" "}
-            <strong className="text-ah-ink">people you recognize</strong>, not another feed. Here’s the
-            straight story.
-          </p>
+          <p className="mx-auto mt-2 max-w-[52ch] text-center text-sm text-ah-muted">Repeat contact, no feed.</p>
           <div className="mt-10 grid gap-5 md:grid-cols-3">
             <article className="rounded-xl border border-ah-border bg-ah-card p-5">
               <h3 className="font-display text-lg text-ah-accent">Why</h3>
@@ -351,13 +314,9 @@ export function HomeSections() {
 
       <section id="join" className="bg-[linear-gradient(160deg,color-mix(in_srgb,var(--accent)_20%,var(--bg))_0%,var(--bg)_45%)] px-4 py-16 sm:px-6">
         <div className="mx-auto max-w-[720px] text-center">
-          <h2 className="font-display text-2xl font-bold text-ah-ink sm:text-3xl">Start with a season, not a search</h2>
-          <p className="mx-auto mt-4 max-w-[60ch] text-lg text-ah-muted">
-            We’re opening cities in waves so pods stay small and support stays human. Quick waitlist below—or{" "}
-            <Link href="/onboarding" className="font-semibold text-ah-accent underline-offset-2 hover:underline">
-              full intake
-            </Link>{" "}
-            so we can match thoughtfully.
+          <h2 className="font-display text-xl font-bold text-ah-ink sm:text-2xl">Waitlist</h2>
+          <p className="mx-auto mt-2 text-sm text-ah-muted">
+            Or <Link href="/waitlist" className="text-ah-accent hover:underline">full intake</Link>.
           </p>
           <div className="mx-auto mt-8 max-w-[420px] rounded-xl border border-ah-border bg-ah-card p-6 text-left shadow-sm">
             <WaitlistForm idPrefix="home" />

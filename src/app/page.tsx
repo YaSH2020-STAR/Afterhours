@@ -1,10 +1,5 @@
-import { MarketingLayout } from "@/components/layout/MarketingLayout";
-import { HomeSections } from "@/components/landing/HomeSections";
+import { MarketingLanding } from "@/components/marketing/MarketingLanding";
 
 export default function HomePage() {
-  return (
-    <MarketingLayout>
-      <HomeSections />
-    </MarketingLayout>
-  );
+  return <MarketingLanding />;
 }

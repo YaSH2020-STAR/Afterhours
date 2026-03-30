@@ -1,59 +1,35 @@
 # AfterHours
 
-Production-ready marketing site and waitlist for **AfterHours** — focused on **young working professionals (~20–30) who recently moved to a new city**; small pods, recurring rituals, bounded seasons (Next.js App Router, Prisma, Zod).
+Small weekly pods, bounded seasons — Next.js, Prisma, **PostgreSQL** (Docker locally, Neon/Supabase in production).
 
-## Local development
+**Run locally**
 
-```bash
-npm install
-# .env is created from .env.example — SQLite by default
-npm run db:push
-npm run dev
-```
+1. `docker compose up -d` (Postgres on port 5432)
+2. `cp .env.example .env` — default `DATABASE_URL` matches `docker-compose.yml`
+3. `npm install && npm run setup && npm run dev` → http://localhost:3000
 
-Open [http://localhost:3000](http://localhost:3000).
+### Netlify
 
-## Environment
+1. Create a **Postgres** database (e.g. [Neon](https://neon.tech)) and copy the connection string.
+2. In [Netlify](https://app.netlify.com): **Add new site** → Import from Git → pick this repo.  
+   Build settings are in `netlify.toml` (migrations run before `next build`).
+3. **Site configuration → Environment variables** (minimum):
+   - `DATABASE_URL` — Postgres URL (with SSL for Neon)
+   - `AUTH_SECRET` — long random string
+   - `AUTH_URL` — `https://<your-site>.netlify.app`
+   - `NEXT_PUBLIC_SITE_URL` — same as `AUTH_URL`
+   - Optional: `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, `EMAIL_SERVER`, `DEMO_LOGIN_*` for sign-in (see `.env.example`)
+4. Deploy. After first deploy, run **seed** once from your machine (or CI) with `DATABASE_URL` pointing at production:  
+   `npx tsx prisma/seed.ts`  
+   Or use Neon SQL editor / Prisma Studio against prod.
+5. Set `AFTERHOURS_AUTO_SEED_DISCOVERY=false` on Netlify if you do not want demo discovery data auto-upserted in production.
 
-| Variable | Purpose |
-|----------|---------|
-| `DATABASE_URL` | Prisma connection string. Default `file:./dev.db` (SQLite under `prisma/`). |
-| `NEXT_PUBLIC_SITE_URL` | Canonical site URL for metadata, sitemap, and robots (e.g. `https://your-domain.com`). |
+### Sign-in (what “anyone” means)
 
-## Database
+| Method | Who can use it |
+|--------|----------------|
+| **Google** | Any Google account, if `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` are set (creates user on first sign-in). |
+| **Email magic link** | Any email address, if `EMAIL_SERVER` (and usually `EMAIL_FROM`) is set. |
+| **Demo password** | Only emails in `DEMO_LOGIN_EMAILS` (or the single `ALLOWED_LOGIN_EMAIL`) with the shared demo password — **not** open to arbitrary emails. |
 
-- **Development:** SQLite (`file:./dev.db`) — zero setup.
-- **Production (recommended):** Use **PostgreSQL** (e.g. [Neon](https://neon.tech), [Supabase](https://supabase.com), or Docker via `docker-compose.yml`). Update `prisma/schema.prisma` `provider` to `postgresql`, set `DATABASE_URL`, then run `npx prisma migrate dev` (or `db push` for prototyping).
-
-SQLite on serverless hosts (e.g. Vercel) is **not** suitable for persistent writes — use Postgres.
-
-## Scripts
-
-| Script | Command |
-|--------|---------|
-| Dev server | `npm run dev` |
-| Production build | `npm run build` |
-| Start production | `npm start` |
-| Lint | `npm run lint` |
-| Prisma Studio | `npm run db:studio` |
-| Push schema (dev) | `npm run db:push` |
-
-## Deploy (e.g. Vercel)
-
-1. Connect the repo; set `NEXT_PUBLIC_SITE_URL` and Postgres `DATABASE_URL`.
-2. Build command: `npm run build` (runs `prisma generate` automatically).
-3. Ensure the Prisma client is generated on each build (`postinstall` + build script).
-
-## API
-
-- `POST /api/waitlist` — JSON body validated with Zod; stores intake in `WaitlistSubmission`. Duplicate emails return a friendly success message (no error leak).
-
-## Hackathon / judge demo (Phoenix, AZ)
-
-- **Browse sample rows:** [http://localhost:3000/demo/phoenix](http://localhost:3000/demo/phoenix) (or your deployed URL + `/demo/phoenix`).
-- **Data file:** `src/data/phoenix-demo-samples.ts` — 10 fictional Greater Phoenix profiles (emails `@demo.afterhours.example`).
-- **Load into SQLite:** `npm run db:seed` — inserts those rows via Prisma (deletes prior demo emails first). Then use **Prisma Studio** (`npm run db:studio`) to show the table live.
-
-## License
-
-Private / your team — adjust as needed.
+Copy `.env.example` to `.env` so demo sign-in is available locally. To allow **any** visitor to log in, add Google and/or email SMTP in `.env` (see comments in `.env.example`).

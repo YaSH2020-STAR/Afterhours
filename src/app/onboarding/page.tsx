@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
-import { MarketingLayout } from "@/components/layout/MarketingLayout";
-import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { AppOnboardingWizard } from "@/components/onboarding/AppOnboardingWizard";
 
 export const metadata: Metadata = {
-  title: "Full intake",
-  description:
-    "For young professionals who recently moved cities: tell us your metro, situation, availability, and comfort needs so we can match you into a small pod.",
+  title: "Onboarding",
+  description: "Tell us your city, availability, and preferences for a thoughtful pod match.",
 };
 
-export default function OnboardingPage() {
-  return (
-    <MarketingLayout>
-      <OnboardingWizard />
-    </MarketingLayout>
-  );
+export default async function OnboardingPage() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/auth/signin?callbackUrl=/onboarding");
+  }
+  if (session.user.onboardingCompleted) {
+    redirect("/dashboard");
+  }
+
+  return <AppOnboardingWizard />;
 }

@@ -28,12 +28,20 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <Link
-          href="/onboarding"
-          className="rounded-lg border-2 border-ah-accent bg-ah-accent px-3 py-1.5 text-sm font-semibold text-white hover:border-ah-accent-soft hover:bg-ah-accent-soft max-[720px]:ml-auto"
-        >
-          Join waitlist
-        </Link>
+        <div className="flex flex-wrap items-center gap-2 max-[720px]:ml-auto">
+          <Link
+            href="/auth/signin"
+            className="rounded-lg border-2 border-ah-border bg-transparent px-3 py-1.5 text-sm font-semibold text-ah-ink hover:border-ah-accent hover:text-ah-accent"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/waitlist"
+            className="rounded-lg border-2 border-ah-accent bg-ah-accent px-3 py-1.5 text-sm font-semibold text-white hover:border-ah-accent-soft hover:bg-ah-accent-soft"
+          >
+            Waitlist
+          </Link>
+        </div>
       </div>
     </header>
   );

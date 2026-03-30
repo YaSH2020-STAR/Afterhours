@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Source_Sans_3 } from "next/font/google";
+import { Providers } from "@/components/providers/Providers";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -17,22 +18,20 @@ const sourceSans = Source_Sans_3({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: {
-    default: "AfterHours — rhythm, not RSVPs",
+    default: "AfterHours — real friends after work",
     template: "%s · AfterHours",
   },
-  description:
-    "Small pods and recurring rituals for young working professionals (20–30) who recently moved to a new city—without dating pressure, résumé theater, or endless one-off events.",
+  description: "Small weekly groups. Six weeks. Your city.",
   openGraph: {
-    title: "AfterHours — rhythm, not RSVPs",
-    description:
-      "Same people, same weekly cadence, in your new city—real-life co-presence without the performance.",
+    title: "AfterHours — real friends after work",
+    description: "Small weekly groups. Six weeks. Your city.",
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
     title: "AfterHours",
-    description: "Pods, seasons, and dignity—not another feed.",
+    description: "AfterHours",
   },
   robots: { index: true, follow: true },
 };
@@ -51,7 +50,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${fraunces.variable} ${sourceSans.variable}`}>
       <body className={`${sourceSans.className} min-h-screen bg-ah-bg text-ah-ink antialiased`}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

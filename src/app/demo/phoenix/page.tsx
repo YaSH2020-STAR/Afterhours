@@ -90,7 +90,7 @@ export default function PhoenixDemoPage() {
           </Link>
           <span className="text-ah-border">|</span>
           <span className="text-ah-muted">
-            Load into SQLite: <code className="rounded bg-ah-bg-alt px-1">npm run db:seed</code>
+            Load into Postgres: <code className="rounded bg-ah-bg-alt px-1">npm run db:seed</code>
           </span>
         </div>
 

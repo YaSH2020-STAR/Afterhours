@@ -11,8 +11,8 @@ export default function NotFound() {
           <Link href="/" className="font-semibold text-ah-accent underline-offset-2 hover:underline">
             Home
           </Link>
-          <Link href="/onboarding" className="font-semibold text-ah-accent underline-offset-2 hover:underline">
-            Join waitlist
+          <Link href="/auth/signin" className="font-semibold text-ah-accent underline-offset-2 hover:underline">
+            Sign in
           </Link>
         </p>
       </div>

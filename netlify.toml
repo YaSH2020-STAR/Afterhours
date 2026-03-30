@@ -1,0 +1,10 @@
+# Next.js on Netlify — https://docs.netlify.com/frameworks/next-js/overview/
+# Requires DATABASE_URL (e.g. Neon) in Netlify env. Migrations run before the Next build.
+[build]
+  command = "npx prisma migrate deploy && npm run build"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

@@ -92,7 +92,7 @@ export default function SafetyPage() {
         </section>
 
         <p className="mt-10 text-sm text-ah-muted">
-          <Link href="/onboarding" className="font-semibold text-ah-accent underline-offset-2 hover:underline">
+          <Link href="/waitlist" className="font-semibold text-ah-accent underline-offset-2 hover:underline">
             Join the waitlist
           </Link>{" "}
           ·{" "}
