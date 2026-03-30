@@ -144,7 +144,32 @@ export function SignInPanel({ flags }: { flags: Flags }) {
       )}
 
       {!hasGoogle && !hasEmail && !hasDemo && (
-        <p className="text-sm text-ah-muted">Add OAuth, email, or demo vars to .env.</p>
+        <div className="space-y-3 rounded-lg border border-ah-border bg-ah-bg-alt/50 p-4 text-sm text-ah-muted">
+          <p className="font-medium text-ah-ink">No sign-in methods are enabled</p>
+          <p>
+            The server did not find any auth provider configuration. That usually means environment variables are missing
+            on <strong className="text-ah-ink">Netlify</strong> (not just your laptop&apos;s <code className="text-xs">.env</code>).
+          </p>
+          <p className="text-xs leading-relaxed">
+            In Netlify: <strong className="text-ah-ink">Site configuration → Environment variables</strong>, add at least one
+            of:
+          </p>
+          <ul className="list-inside list-disc space-y-1 text-xs leading-relaxed">
+            <li>
+              <strong className="text-ah-ink">Demo (quickest):</strong> <code>DEMO_LOGIN_PASSWORD</code> and{" "}
+              <code>DEMO_LOGIN_EMAILS</code> (comma-separated; your real email is fine)
+            </li>
+            <li>
+              <strong className="text-ah-ink">Google:</strong> <code>AUTH_GOOGLE_ID</code> and{" "}
+              <code>AUTH_GOOGLE_SECRET</code> (add OAuth redirect URI for your Netlify URL)
+            </li>
+            <li>
+              <strong className="text-ah-ink">Magic link:</strong> <code>EMAIL_SERVER</code> and usually{" "}
+              <code>EMAIL_FROM</code>
+            </li>
+          </ul>
+          <p className="text-xs">Locally: copy <code>.env.example</code> → <code>.env</code>, then redeploy after changing Netlify.</p>
+        </div>
       )}
 
       {message && <p className="text-sm text-ah-accent">{message}</p>}
