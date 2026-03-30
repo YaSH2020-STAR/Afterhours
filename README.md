@@ -21,20 +21,19 @@ Small weekly pods, bounded seasons — Next.js, Prisma, **PostgreSQL** (Docker l
    - `AUTH_SECRET` — long random string (`openssl rand -base64 32`)
    - `AUTH_URL` — `https://<your-site>.netlify.app` (use your real Netlify URL after first deploy, or set after you know it)
    - `NEXT_PUBLIC_SITE_URL` — same as `AUTH_URL`
-   - **Sign-in (pick one or more):** without these, `/auth/signin` shows “no sign-in methods”.
-     - **Fastest:** `DEMO_LOGIN_PASSWORD` + `DEMO_LOGIN_EMAILS` (e.g. `you@gmail.com` — comma-separated list)
-     - **Production:** `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` (set Google OAuth redirect to `https://<site>/api/auth/callback/google`)
-     - **Email link:** `EMAIL_SERVER` + `EMAIL_FROM`
+   - **Sign-in:** email + password works for everyone (`/auth/signup` → `/auth/signin`). Optionally add:
+     - **Google:** `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` (OAuth redirect `https://<site>/api/auth/callback/google`)
+     - **Magic link:** `EMAIL_SERVER` + `EMAIL_FROM`
 4. **Deploy** (or **Clear cache and deploy** if you already failed once).
 5. After a successful deploy, run **seed** once against production DB (from your machine with prod `DATABASE_URL`): `npx tsx prisma/seed.ts`
 6. Optional: `AFTERHOURS_AUTO_SEED_DISCOVERY=false` on Netlify for production if you don’t want demo discovery auto-seed.
 
-### Sign-in (what “anyone” means)
+### Sign-in
 
 | Method | Who can use it |
 |--------|----------------|
-| **Google** | Any Google account, if `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` are set (creates user on first sign-in). |
+| **Email + password** | Anyone: sign up at `/auth/signup`, then sign in (no extra env vars). |
+| **Google** | Any Google account, if `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` are set. |
 | **Email magic link** | Any email address, if `EMAIL_SERVER` (and usually `EMAIL_FROM`) is set. |
-| **Demo password** | Only emails in `DEMO_LOGIN_EMAILS` (or the single `ALLOWED_LOGIN_EMAIL`) with the shared demo password — **not** open to arbitrary emails. |
 
-Copy `.env.example` to `.env` so demo sign-in is available locally. To allow **any** visitor to log in, add Google and/or email SMTP in `.env` (see comments in `.env.example`).
+Local `npm run setup` seeds demo users at `@demo.afterhours.local`; sign in with that email and the password from `SEED_DEMO_LOGIN_PASSWORD` (default `afterhours-demo` — see `.env.example`).

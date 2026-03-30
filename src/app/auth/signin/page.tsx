@@ -22,32 +22,21 @@ export default function SignInPage() {
         <Link href="/" className="text-ah-accent hover:underline">
           Home
         </Link>
+        {" · "}
+        <Link href="/auth/signup" className="text-ah-accent hover:underline">
+          Sign up
+        </Link>
       </p>
-      {(openGoogle || openEmail) && (
-        <p className="mt-3 text-sm leading-relaxed text-ah-muted">
-          {openGoogle && (
-            <>
-              <strong className="font-medium text-ah-ink">Google:</strong> anyone with a Google account can sign in
-              (first visit creates your profile).
-              {openEmail ? " " : ""}
-            </>
-          )}
-          {openEmail && (
-            <>
-              <strong className="font-medium text-ah-ink">Email link:</strong> use any address—we send a one-time link
-              (no password to remember).
-            </>
-          )}
-        </p>
-      )}
-      {flags.demo && !(openGoogle || openEmail) && (
-        <p className="mt-3 text-sm text-ah-muted">
-          Demo sign-in uses emails listed in <code className="rounded bg-ah-bg-alt px-1 text-xs">DEMO_LOGIN_EMAILS</code>{" "}
-          and the shared demo password from <code className="rounded bg-ah-bg-alt px-1 text-xs">.env</code>. Copy{" "}
-          <code className="rounded bg-ah-bg-alt px-1 text-xs">.env.example</code> → <code className="rounded bg-ah-bg-alt px-1 text-xs">.env</code>{" "}
-          and run <code className="rounded bg-ah-bg-alt px-1 text-xs">npm run setup</code>.
-        </p>
-      )}
+      <p className="mt-3 text-sm leading-relaxed text-ah-muted">
+        Sign in with the email and password you used at registration.
+        {(openGoogle || openEmail) && (
+          <>
+            {" "}
+            You can also use {openGoogle && openEmail ? "Google or a one-time email link" : openGoogle ? "Google" : "a one-time email link"} if your host has
+            those options enabled.
+          </>
+        )}
+      </p>
       <div className="mt-8 rounded-xl border border-ah-border bg-ah-card p-6 shadow-sm">
         <Suspense fallback={<p className="text-sm text-ah-muted">Loading sign-in…</p>}>
           <SignInPanel flags={flags} />

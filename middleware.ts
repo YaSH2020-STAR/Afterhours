@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-const publicPrefixes = ["/auth", "/waitlist", "/safety", "/demo"] as const;
+const publicPrefixes = ["/auth", "/login", "/signup", "/waitlist", "/safety", "/demo"] as const;
 
 function isPublicPath(pathname: string) {
   if (pathname === "/") return true;

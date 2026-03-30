@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import { seedDiscoveryDemoData } from "../src/lib/demo-discovery-data";
 import { PHOENIX_DEMO_SAMPLES, toPrismaSeedData } from "../src/data/phoenix-demo-samples";
 
@@ -61,6 +62,9 @@ async function seedPods() {
   await prisma.session.deleteMany({ where: { user: { email: { in: [...DEMO_EMAILS] } } } });
   await prisma.user.deleteMany({ where: { email: { in: [...DEMO_EMAILS] } } });
 
+  const seedPw = process.env.SEED_DEMO_LOGIN_PASSWORD ?? "afterhours-demo";
+  const demoPasswordHash = await bcrypt.hash(seedPw, 12);
+
   const bios = [
     "Product designer, learning Austin one coffee shop at a time.",
     "Remote SWE—trying to touch grass on weeknights.",
@@ -77,6 +81,7 @@ async function seedPods() {
       data: {
         email,
         name: email.split("@")[0]!.replace(/^\w/, (c) => c.toUpperCase()),
+        passwordHash: demoPasswordHash,
         bio: bios[i] ?? "New to town.",
         city: "Austin, TX",
         timezone: "America/Chicago",

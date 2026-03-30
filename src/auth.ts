@@ -3,11 +3,8 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import Nodemailer from "next-auth/providers/nodemailer";
-import { ensureDemoUser } from "@/lib/ensure-demo-user";
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-
-const demoEmails =
-  process.env.DEMO_LOGIN_EMAILS?.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean) ?? [];
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -57,37 +54,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         ]
       : []),
     Credentials({
-      id: "demo",
-      name: "Demo login",
+      id: "credentials",
+      name: "Email and password",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         const email = (credentials?.email as string | undefined)?.trim().toLowerCase();
-        const password = (credentials?.password as string | undefined)?.trim();
+        const password = credentials?.password as string | undefined;
         if (!email || !password) return null;
 
-        const allowedEmail = process.env.ALLOWED_LOGIN_EMAIL?.trim().toLowerCase();
-        const allowedPass = process.env.ALLOWED_LOGIN_PASSWORD?.trim();
-        if (allowedEmail && allowedPass && email === allowedEmail && password === allowedPass) {
-          try {
-            return await ensureDemoUser(email);
-          } catch (e) {
-            console.error("[auth credentials] ensureDemoUser failed", e);
-            return null;
-          }
-        }
+        const user = await prisma.user.findUnique({
+          where: { email },
+          select: { id: true, email: true, name: true, passwordHash: true },
+        });
+        if (!user?.passwordHash) return null;
 
-        const secret = process.env.DEMO_LOGIN_PASSWORD?.trim();
-        if (!secret || demoEmails.length === 0) return null;
-        if (!demoEmails.includes(email) || password !== secret) return null;
-        try {
-          return await ensureDemoUser(email);
-        } catch (e) {
-          console.error("[auth demo] ensureDemoUser failed", e);
-          return null;
-        }
+        const ok = await bcrypt.compare(password, user.passwordHash);
+        if (!ok) return null;
+
+        return { id: user.id, email: user.email, name: user.name };
       },
     }),
   ],
