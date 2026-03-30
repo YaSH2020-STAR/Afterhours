@@ -1,4 +1,6 @@
-import { auth } from "@/auth";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 
 const publicPrefixes = ["/auth", "/waitlist", "/safety", "/demo"] as const;
 
@@ -9,25 +11,30 @@ function isPublicPath(pathname: string) {
   return publicPrefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
-export default auth((req) => {
+export default async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
   if (pathname.startsWith("/api/") && !pathname.startsWith("/api/auth")) {
-    return undefined;
+    return NextResponse.next();
   }
 
   if (isPublicPath(pathname)) {
-    return undefined;
+    return NextResponse.next();
   }
 
-  if (!req.auth) {
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET,
+  });
+
+  if (!token) {
     const signIn = new URL("/auth/signin", req.nextUrl.origin);
     signIn.searchParams.set("callbackUrl", pathname + req.nextUrl.search);
-    return Response.redirect(signIn);
+    return NextResponse.redirect(signIn);
   }
 
-  return undefined;
-});
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
