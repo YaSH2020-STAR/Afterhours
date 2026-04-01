@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { loginWithCredentials } from "@/actions/login";
 
 type Flags = { google: boolean; email: boolean };
 
@@ -59,18 +60,23 @@ export function SignInPanel({ flags }: { flags: Flags }) {
     e.preventDefault();
     setPending("credentials");
     setMessage(null);
-    try {
-      // Full redirect flow so the session cookie is set on the server before leaving this page.
-      // redirect:false + client navigation often leaves middleware without a JWT (loop back to sign-in).
-      await signIn("credentials", {
-        email: email.trim().toLowerCase(),
-        password,
-        redirectTo: callbackUrl,
-      });
-    } catch {
-      setMessage("Wrong email or password, or this account uses Google / magic link only.");
-      setPending(null);
+    const path = searchParams.get("callbackUrl") ?? "/dashboard";
+    const redirectTo =
+      path.startsWith("http://") || path.startsWith("https://")
+        ? path
+        : `${window.location.origin}${path.startsWith("/") ? path : `/${path}`}`;
+
+    const result = await loginWithCredentials({
+      email: email.trim().toLowerCase(),
+      password,
+      redirectTo,
+    });
+    setPending(null);
+    if (!result.ok) {
+      setMessage(result.error);
+      return;
     }
+    window.location.replace(result.redirectUrl);
   }
 
   const { google: hasGoogle, email: hasEmail } = flags;

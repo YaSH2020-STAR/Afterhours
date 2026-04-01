@@ -1,9 +1,9 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
+import { loginWithCredentials } from "@/actions/login";
 
 export function SignUpForm() {
   const router = useRouter();
@@ -55,13 +55,24 @@ export function SignUpForm() {
       }
 
       try {
-        await signIn("credentials", {
+        const path = callbackUrl.startsWith("/") ? callbackUrl : `/${callbackUrl}`;
+        const redirectTo =
+          callbackUrl.startsWith("http://") || callbackUrl.startsWith("https://")
+            ? callbackUrl
+            : `${window.location.origin}${path}`;
+        const login = await loginWithCredentials({
           email: email.trim().toLowerCase(),
           password,
-          redirectTo: callbackUrl,
+          redirectTo,
         });
+        if (!login.ok) {
+          setMessage("Account created. Sign in below with the same password.");
+          router.push(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+          return;
+        }
+        window.location.replace(login.redirectUrl);
       } catch (err) {
-        console.error("[signup] signIn", err);
+        console.error("[signup] login", err);
         setMessage("Account created. Please sign in below.");
         router.push(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       }
