@@ -3,7 +3,7 @@
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Flags = { google: boolean; email: boolean };
 
@@ -16,6 +16,13 @@ export function SignInPanel({ flags }: { flags: Flags }) {
   const [showPassword, setShowPassword] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const err = searchParams.get("error");
+    if (err === "CredentialsSignin" || err === "Configuration") {
+      setMessage("Wrong email or password, or this account uses Google / magic link only.");
+    }
+  }, [searchParams]);
 
   async function google() {
     setPending("google");
@@ -52,18 +59,18 @@ export function SignInPanel({ flags }: { flags: Flags }) {
     e.preventDefault();
     setPending("credentials");
     setMessage(null);
-    const res = await signIn("credentials", {
-      email: email.trim().toLowerCase(),
-      password,
-      redirect: false,
-      callbackUrl,
-    });
-    setPending(null);
-    if (!res?.ok || res.error) {
+    try {
+      // Full redirect flow so the session cookie is set on the server before leaving this page.
+      // redirect:false + client navigation often leaves middleware without a JWT (loop back to sign-in).
+      await signIn("credentials", {
+        email: email.trim().toLowerCase(),
+        password,
+        redirectTo: callbackUrl,
+      });
+    } catch {
       setMessage("Wrong email or password, or this account uses Google / magic link only.");
-      return;
+      setPending(null);
     }
-    window.location.assign(callbackUrl);
   }
 
   const { google: hasGoogle, email: hasEmail } = flags;

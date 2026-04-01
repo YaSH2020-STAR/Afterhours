@@ -1,19 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Source_Sans_3 } from "next/font/google";
 import { Providers } from "@/components/providers/Providers";
 import "./globals.css";
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-fraunces",
-  display: "swap",
-});
-
-const sourceSans = Source_Sans_3({
-  subsets: ["latin"],
-  variable: "--font-source-sans",
-  display: "swap",
-});
+/** System font stacks only — avoids next/font Google fetch during Netlify build (no network to fonts.googleapis.com). */
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
@@ -48,8 +37,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${sourceSans.variable}`}>
-      <body className={`${sourceSans.className} min-h-screen bg-ah-bg text-ah-ink antialiased`}>
+    <html lang="en">
+      <body className="min-h-screen bg-ah-bg text-ah-ink antialiased font-sans">
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -39,28 +39,33 @@ export function CreateGroupForm() {
         setError(null);
         const fd = new FormData(e.currentTarget);
         startTransition(async () => {
-          const r = await createInterestGroup({
-            title: String(fd.get("title") ?? ""),
-            category: String(fd.get("category") ?? ""),
-            date: String(fd.get("date") ?? ""),
-            time: String(fd.get("time") ?? ""),
-            endTime: String(fd.get("endTime") ?? "") || undefined,
-            locationLabel: String(fd.get("locationLabel") ?? ""),
-            address: String(fd.get("address") ?? "") || undefined,
-            neighborhood: String(fd.get("neighborhood") ?? "") || undefined,
-            vibe: String(fd.get("vibe") ?? ""),
-            intensity: String(fd.get("intensity") ?? "") as (typeof INTENSITY)[number],
-            minPeople: Number(fd.get("minPeople")),
-            maxPeople: Number(fd.get("maxPeople")),
-            description: String(fd.get("description") ?? "") || undefined,
-            isPublic: fd.get("isPublic") === "on",
-            chatEnabled: fd.get("chatEnabled") === "on",
-          });
-          if (r.ok) {
-            router.push(`/group/${r.groupId}`);
-            router.refresh();
-          } else {
-            setError(r.error ?? "Something went wrong.");
+          try {
+            const r = await createInterestGroup({
+              title: String(fd.get("title") ?? ""),
+              category: String(fd.get("category") ?? ""),
+              date: String(fd.get("date") ?? ""),
+              time: String(fd.get("time") ?? ""),
+              endTime: String(fd.get("endTime") ?? "") || undefined,
+              locationLabel: String(fd.get("locationLabel") ?? ""),
+              address: String(fd.get("address") ?? "") || undefined,
+              neighborhood: String(fd.get("neighborhood") ?? "") || undefined,
+              vibe: String(fd.get("vibe") ?? ""),
+              intensity: String(fd.get("intensity") ?? "") as (typeof INTENSITY)[number],
+              minPeople: Number(fd.get("minPeople")),
+              maxPeople: Number(fd.get("maxPeople")),
+              description: String(fd.get("description") ?? "") || undefined,
+              isPublic: fd.get("isPublic") === "on",
+              chatEnabled: fd.get("chatEnabled") === "on",
+            });
+            if (r.ok) {
+              router.push(`/group/${r.groupId}`);
+              router.refresh();
+            } else {
+              setError(r.error ?? "Something went wrong.");
+            }
+          } catch (e) {
+            console.error("[create meetup]", e);
+            setError("Could not post meetup. Stay signed in and try again.");
           }
         });
       }}

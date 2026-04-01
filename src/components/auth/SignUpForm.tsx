@@ -55,25 +55,14 @@ export function SignUpForm() {
       }
 
       try {
-        const res = await signIn("credentials", {
+        await signIn("credentials", {
           email: email.trim().toLowerCase(),
           password,
-          redirect: false,
-          callbackUrl,
+          redirectTo: callbackUrl,
         });
-        if (!res?.ok || res.error) {
-          setMessage(
-            "Account created. Sign in below — auto sign-in did not complete (often AUTH_SECRET or AUTH_URL on Netlify).",
-          );
-          router.push(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-          return;
-        }
-        window.location.assign(callbackUrl);
       } catch (err) {
         console.error("[signup] signIn", err);
-        setMessage(
-          "Account created. Please sign in manually. If sign-in keeps failing, set AUTH_SECRET and AUTH_URL in Netlify to match this site.",
-        );
+        setMessage("Account created. Please sign in below.");
         router.push(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       }
     });
