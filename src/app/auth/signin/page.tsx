@@ -15,7 +15,10 @@ export default function SignInPage() {
   const openEmail = flags.email;
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-[440px] flex-col justify-center px-4 py-12">
+    <div
+      className="mx-auto flex min-h-[70vh] max-w-[440px] flex-col justify-center px-4 py-12"
+      data-auth-ui="credentials-v1"
+    >
       <p className="text-xs font-semibold uppercase tracking-wider text-ah-warm">AfterHours</p>
       <h1 className="font-display text-3xl font-bold text-ah-ink">Sign in</h1>
       <p className="mt-2 text-sm text-ah-muted">
@@ -28,6 +31,9 @@ export default function SignInPage() {
         </Link>
       </p>
       <p className="mt-3 text-sm leading-relaxed text-ah-muted">
+        Email and password work by default — Google and magic link are optional extras, not required.
+      </p>
+      <p className="mt-2 text-sm leading-relaxed text-ah-muted">
         Sign in with the email and password you used at registration.
         {(openGoogle || openEmail) && (
           <>
