@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+/** Prisma + bcrypt need Node (not Edge) */
+export const runtime = "nodejs";
+
 export default function SignUpPage() {
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-[440px] flex-col justify-center px-4 py-12">

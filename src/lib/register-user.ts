@@ -18,52 +18,87 @@ const withConfirmSchema = baseSchema.extend({
 
 export type RegisterResult = { ok: true } | { ok: false; error: string };
 
+function prismaFailureMessage(e: Prisma.PrismaClientKnownRequestError): string | null {
+  switch (e.code) {
+    case "P2002":
+      return "An account with this email already exists. Sign in instead.";
+    case "P2021":
+    case "P2022":
+      return "Database is missing the latest schema. Run prisma migrate deploy on production.";
+    case "P1001":
+      return "Cannot reach the database. Check DATABASE_URL on the server.";
+    default:
+      return null;
+  }
+}
+
 /** Shared by server action and POST /api/auth/register */
 export async function registerUserWithPassword(input: unknown): Promise<RegisterResult> {
-  const parsed = baseSchema.safeParse(input);
-  if (!parsed.success) {
-    const err = parsed.error.flatten().fieldErrors;
-    const first = err.name?.[0] ?? err.email?.[0] ?? err.password?.[0] ?? "Invalid input.";
-    return { ok: false, error: first };
-  }
-
-  const { name, email, password } = parsed.data;
-  const passwordHash = await bcrypt.hash(password, 12);
-
   try {
-    await prisma.user.create({
-      data: {
-        email,
-        name,
-        passwordHash,
-        onboardingCompleted: false,
-      },
-    });
-    return { ok: true };
-  } catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-      return { ok: false, error: "An account with this email already exists. Sign in instead." };
+    if (!process.env.DATABASE_URL?.trim()) {
+      return { ok: false, error: "Server misconfiguration: DATABASE_URL is not set." };
     }
-    console.error("[register]", e);
-    return { ok: false, error: "Could not create your account. Try again." };
+
+    const parsed = baseSchema.safeParse(input);
+    if (!parsed.success) {
+      const err = parsed.error.flatten().fieldErrors;
+      const first = err.name?.[0] ?? err.email?.[0] ?? err.password?.[0] ?? "Invalid input.";
+      return { ok: false, error: first };
+    }
+
+    const { name, email, password } = parsed.data;
+    let passwordHash: string;
+    try {
+      passwordHash = await bcrypt.hash(password, 12);
+    } catch (e) {
+      console.error("[register] bcrypt", e);
+      return { ok: false, error: "Could not process password. Try again." };
+    }
+
+    try {
+      await prisma.user.create({
+        data: {
+          email,
+          name,
+          passwordHash,
+          onboardingCompleted: false,
+        },
+      });
+      return { ok: true };
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        const mapped = prismaFailureMessage(e);
+        if (mapped) return { ok: false, error: mapped };
+      }
+      console.error("[register] prisma", e);
+      return { ok: false, error: "Could not create your account. Try again." };
+    }
+  } catch (e) {
+    console.error("[register] unexpected", e);
+    return { ok: false, error: "Something went wrong. Try again in a moment." };
   }
 }
 
 /** For API route when confirmPassword is required */
 export async function registerUserWithPasswordAndConfirm(input: unknown): Promise<RegisterResult> {
-  const parsed = withConfirmSchema.safeParse(input);
-  if (!parsed.success) {
-    const err = parsed.error.flatten().fieldErrors;
-    const first =
-      err.name?.[0] ??
-      err.email?.[0] ??
-      err.password?.[0] ??
-      err.confirmPassword?.[0] ??
-      parsed.error.flatten().formErrors[0] ??
-      "Invalid input.";
-    return { ok: false, error: first };
-  }
+  try {
+    const parsed = withConfirmSchema.safeParse(input);
+    if (!parsed.success) {
+      const err = parsed.error.flatten().fieldErrors;
+      const first =
+        err.name?.[0] ??
+        err.email?.[0] ??
+        err.password?.[0] ??
+        err.confirmPassword?.[0] ??
+        parsed.error.flatten().formErrors[0] ??
+        "Invalid input.";
+      return { ok: false, error: first };
+    }
 
-  const { name, email, password } = parsed.data;
-  return registerUserWithPassword({ name, email, password });
+    const { name, email, password } = parsed.data;
+    return registerUserWithPassword({ name, email, password });
+  } catch (e) {
+    console.error("[register] confirm unexpected", e);
+    return { ok: false, error: "Something went wrong. Try again in a moment." };
+  }
 }

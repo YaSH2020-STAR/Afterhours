@@ -26,23 +26,30 @@ export function SignUpForm() {
       return;
     }
     startTransition(async () => {
-      const reg = await registerWithEmail({ name, email, password });
-      if (!reg.ok) {
-        setMessage(reg.error);
-        return;
+      try {
+        const reg = await registerWithEmail({ name, email, password });
+        if (!reg.ok) {
+          setMessage(reg.error);
+          return;
+        }
+        const res = await signIn("credentials", {
+          email: email.trim().toLowerCase(),
+          password,
+          redirect: false,
+          callbackUrl,
+        });
+        if (!res?.ok || res.error) {
+          setMessage("Account created. Sign in with your email and password.");
+          router.push("/auth/signin");
+          return;
+        }
+        window.location.assign(callbackUrl);
+      } catch (err) {
+        console.error(err);
+        setMessage(
+          "Request failed. If this persists, confirm DATABASE_URL and AUTH_SECRET are set on the server and the database has the latest migrations.",
+        );
       }
-      const res = await signIn("credentials", {
-        email: email.trim().toLowerCase(),
-        password,
-        redirect: false,
-        callbackUrl,
-      });
-      if (!res?.ok || res.error) {
-        setMessage("Account created. Sign in with your email and password.");
-        router.push("/auth/signin");
-        return;
-      }
-      window.location.assign(callbackUrl);
     });
   }
 
