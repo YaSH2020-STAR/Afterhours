@@ -4,7 +4,6 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
-import { registerWithEmail } from "@/actions/register";
 
 export function SignUpForm() {
   const router = useRouter();
@@ -26,17 +25,32 @@ export function SignUpForm() {
       return;
     }
     startTransition(async () => {
+      // Use REST route instead of a Server Action — Netlify + Prisma is more reliable on Node API routes.
       try {
-        const reg = await registerWithEmail({ name, email, password });
-        if (!reg.ok) {
-          setMessage(reg.error);
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+            confirmPassword: confirm,
+          }),
+        });
+        let data: { ok?: boolean; error?: string };
+        try {
+          data = (await res.json()) as { ok?: boolean; error?: string };
+        } catch {
+          setMessage("Could not read server response. Try again.");
+          return;
+        }
+        if (!res.ok || !data.ok) {
+          setMessage(data.error ?? "Could not create your account. Try again.");
           return;
         }
       } catch (err) {
-        console.error("[signup] register", err);
-        setMessage(
-          "Could not create your account. Check DATABASE_URL is set for production and run prisma migrate deploy.",
-        );
+        console.error("[signup] register fetch", err);
+        setMessage("Network error. Check your connection and try again.");
         return;
       }
 
