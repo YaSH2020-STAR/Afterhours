@@ -4,7 +4,7 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { loginWithCredentials } from "@/actions/login";
+import { signInWithPasswordClient } from "@/lib/auth-client-signin";
 
 type Flags = { google: boolean; email: boolean };
 
@@ -61,22 +61,22 @@ export function SignInPanel({ flags }: { flags: Flags }) {
     setPending("credentials");
     setMessage(null);
     const path = searchParams.get("callbackUrl") ?? "/dashboard";
-    const redirectTo =
+    const callbackUrl =
       path.startsWith("http://") || path.startsWith("https://")
         ? path
         : `${window.location.origin}${path.startsWith("/") ? path : `/${path}`}`;
 
-    const result = await loginWithCredentials({
+    const result = await signInWithPasswordClient({
       email: email.trim().toLowerCase(),
       password,
-      redirectTo,
+      callbackUrl,
     });
     setPending(null);
     if (!result.ok) {
       setMessage(result.error);
       return;
     }
-    window.location.replace(result.redirectUrl);
+    window.location.assign(result.url);
   }
 
   const { google: hasGoogle, email: hasEmail } = flags;

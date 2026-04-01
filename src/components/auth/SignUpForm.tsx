@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
-import { loginWithCredentials } from "@/actions/login";
+import { signInWithPasswordClient } from "@/lib/auth-client-signin";
 
 export function SignUpForm() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export function SignUpForm() {
       return;
     }
     startTransition(async () => {
-      // Use REST route instead of a Server Action — Netlify + Prisma is more reliable on Node API routes.
+      // REST route (Node) for reliable registration + JSON errors in production.
       try {
         const res = await fetch("/api/auth/register", {
           method: "POST",
@@ -56,21 +56,21 @@ export function SignUpForm() {
 
       try {
         const path = callbackUrl.startsWith("/") ? callbackUrl : `/${callbackUrl}`;
-        const redirectTo =
+        const absoluteCallback =
           callbackUrl.startsWith("http://") || callbackUrl.startsWith("https://")
             ? callbackUrl
             : `${window.location.origin}${path}`;
-        const login = await loginWithCredentials({
+        const login = await signInWithPasswordClient({
           email: email.trim().toLowerCase(),
           password,
-          redirectTo,
+          callbackUrl: absoluteCallback,
         });
         if (!login.ok) {
           setMessage("Account created. Sign in below with the same password.");
           router.push(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
           return;
         }
-        window.location.replace(login.redirectUrl);
+        window.location.assign(login.url);
       } catch (err) {
         console.error("[signup] login", err);
         setMessage("Account created. Please sign in below.");

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
+import { redirectToSignIn } from "@/lib/auth-redirect";
 import { AttendanceButtons } from "@/components/pod/AttendanceButtons";
 import { BlockMemberButton } from "@/components/pod/BlockMemberButton";
 import { PodChat } from "@/components/pod/PodChat";
@@ -17,9 +18,10 @@ export async function generateMetadata(props: { params: Promise<{ podId: string 
 export default async function PodPage(props: { params: Promise<{ podId: string }> }) {
   const { podId } = await props.params;
   const session = await auth();
-  if (!session?.user?.id) return null;
+  const userId = session?.user?.id;
+  if (!userId) redirectToSignIn(`/pod/${podId}`);
 
-  const data = await getPodPageData(session.user.id, podId);
+  const data = await getPodPageData(userId, podId);
   if (!data) notFound();
 
   const {
@@ -74,7 +76,7 @@ export default async function PodPage(props: { params: Promise<{ podId: string }
 
           <PodChat
             podId={pod.id}
-            currentUserId={session.user.id}
+            currentUserId={userId}
             members={members.map((m) => ({ id: m.id, name: m.name }))}
             messages={messages}
             dmUnlocked={dmUnlocked}
@@ -109,11 +111,11 @@ export default async function PodPage(props: { params: Promise<{ podId: string }
                         {interestsFor(m.preferences?.interestsJson).slice(0, 6).join(" · ")}
                       </p>
                     </div>
-                    {m.id !== session.user.id && (
+                    {m.id !== userId && (
                       <ReportMemberButton userId={m.id} podId={pod.id} />
                     )}
                   </div>
-                  {m.id !== session.user.id && (
+                  {m.id !== userId && (
                     <div className="mt-2">
                       <BlockMemberButton userId={m.id} />
                     </div>

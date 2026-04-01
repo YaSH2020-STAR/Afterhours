@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { ProfileLocationControls } from "@/components/profile/ProfileLocationControls";
+import { redirectToSignIn } from "@/lib/auth-redirect";
 
 export const metadata: Metadata = {
   title: "Profile",
@@ -12,13 +13,14 @@ export const metadata: Metadata = {
 
 export default async function ProfilePage() {
   const session = await auth();
-  if (!session?.user?.id) return null;
+  const userId = session?.user?.id;
+  if (!userId) redirectToSignIn("/profile");
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: userId },
     include: { preferences: true },
   });
-  if (!user) return null;
+  if (!user) redirectToSignIn("/profile");
 
   let interests: string[] = [];
   try {

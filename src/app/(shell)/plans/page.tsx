@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { GroupCard } from "@/components/discover/GroupCard";
 import type { GroupForUi } from "@/data/discovery";
 import { getMyPlansContext } from "@/data/discovery";
+import { redirectToSignIn } from "@/lib/auth-redirect";
 
 export const metadata: Metadata = {
   title: "Plans",
@@ -23,10 +24,11 @@ function splitJoinedPlans(joined: GroupForUi[], viewerId: string) {
 
 export default async function MyPlansPage() {
   const session = await auth();
-  if (!session?.user?.id) return null;
+  const userId = session?.user?.id;
+  if (!userId) redirectToSignIn("/plans");
 
-  const { joined, created, summary } = await getMyPlansContext(session.user.id);
-  const viewerId = session.user.id;
+  const { joined, created, summary } = await getMyPlansContext(userId);
+  const viewerId = userId;
   const { going, waitlisted, interested } = splitJoinedPlans(joined, viewerId);
 
   return (

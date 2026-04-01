@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { redirectToSignIn } from "@/lib/auth-redirect";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -11,10 +12,11 @@ export const metadata: Metadata = {
 
 export default async function SettingsPage() {
   const session = await auth();
-  if (!session?.user?.id) return null;
+  const userId = session?.user?.id;
+  if (!userId) redirectToSignIn("/settings");
 
   const blocks = await prisma.block.findMany({
-    where: { blockerId: session.user.id },
+    where: { blockerId: userId },
     include: { blocked: { select: { id: true, name: true, email: true } } },
     orderBy: { createdAt: "desc" },
   });

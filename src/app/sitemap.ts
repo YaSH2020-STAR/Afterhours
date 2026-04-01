@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
+import { getPublicSiteUrl } from "@/lib/site-url";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const base = getPublicSiteUrl();
   const root = new URL(base);
   const paths = ["", "/waitlist", "/safety", "/auth/signin"];
   return paths.map((p) => ({

@@ -11,6 +11,8 @@ const baseSecurityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  /** Prisma Client must stay external for correct engine binaries on Vercel/serverless. */
+  serverExternalPackages: ["@prisma/client", "prisma"],
   turbopack: {
     root: process.cwd(),
   },

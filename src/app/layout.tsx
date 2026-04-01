@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Providers } from "@/components/providers/Providers";
+import { getPublicSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
-/** System font stacks only — avoids next/font Google fetch during Netlify build (no network to fonts.googleapis.com). */
-
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  metadataBase: new URL(getPublicSiteUrl()),
   title: {
     default: "AfterHours — real friends after work",
     template: "%s · AfterHours",

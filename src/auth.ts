@@ -5,9 +5,11 @@ import Google from "next-auth/providers/google";
 import Nodemailer from "next-auth/providers/nodemailer";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { getAuthSecret } from "@/lib/auth-secret";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
+  secret: getAuthSecret(),
   trustHost: true,
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   pages: {
@@ -54,7 +56,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       ? [
           Nodemailer({
             server: process.env.EMAIL_SERVER,
-            from: process.env.EMAIL_FROM ?? "AfterHours <noreply@localhost>",
+            from: process.env.EMAIL_FROM ?? "AfterHours <noreply@example.com>",
           }),
         ]
       : []),

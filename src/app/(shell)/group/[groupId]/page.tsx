@@ -5,14 +5,16 @@ import { auth } from "@/auth";
 import { GroupChat } from "@/components/discover/GroupChat";
 import { GroupDetailActions } from "@/components/discover/GroupDetailActions";
 import { getGroupDetail } from "@/data/discovery";
+import { redirectToSignIn } from "@/lib/auth-redirect";
 
 type Props = { params: Promise<{ groupId: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { groupId } = await params;
   const session = await auth();
-  if (!session?.user?.id) return { title: "Group" };
-  const data = await getGroupDetail(session.user.id, groupId);
+  const userId = session?.user?.id;
+  if (!userId) return { title: "Group" };
+  const data = await getGroupDetail(userId, groupId);
   if (!data) return { title: "Group" };
   return { title: data.group.title };
 }
@@ -28,16 +30,16 @@ function fmtWhen(d: Date) {
 }
 
 export default async function GroupDetailPage({ params }: Props) {
-  const session = await auth();
-  if (!session?.user?.id) return null;
-
   const { groupId } = await params;
-  const data = await getGroupDetail(session.user.id, groupId);
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) redirectToSignIn(`/group/${groupId}`);
+  const data = await getGroupDetail(userId, groupId);
   if (!data) notFound();
 
   const { group, join, messages, chatOpen, waitlistPosition } = data;
 
-  const isHost = group.creatorUserId === session.user.id;
+  const isHost = group.creatorUserId === userId;
   const cancelled = group.groupStatus === "cancelled";
   const allowJoin = group.startsAt >= new Date();
 

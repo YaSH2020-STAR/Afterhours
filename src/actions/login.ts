@@ -8,7 +8,7 @@ export type LoginResult = { ok: true; redirectUrl: string } | { ok: false; error
 export async function loginWithCredentials(input: {
   email: string;
   password: string;
-  /** Absolute URL preferred, e.g. https://site.netlify.app/dashboard */
+  /** Absolute URL, e.g. https://your-domain.com/dashboard */
   redirectTo: string;
 }): Promise<LoginResult> {
   const email = input.email.trim().toLowerCase();

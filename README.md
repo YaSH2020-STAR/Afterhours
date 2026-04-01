@@ -2,38 +2,89 @@
 
 **Repository:** [github.com/YaSH2020-STAR/Afterhours](https://github.com/YaSH2020-STAR/Afterhours)
 
-Small weekly pods, bounded seasons — Next.js, Prisma, **PostgreSQL** (Docker locally, Neon/Supabase in production).
+Next.js, Prisma, **PostgreSQL** (Docker locally, Neon/Supabase in production).
 
-**Run locally**
+## Run locally
 
-1. `docker compose up -d` (Postgres on port 5432)
-2. `cp .env.example .env` — default `DATABASE_URL` matches `docker-compose.yml`
+1. `docker compose up -d` (Postgres on port 5432), or use a hosted DB URL in `.env`.
+2. `cp .env.example .env` — set `DATABASE_URL`, **`DIRECT_URL`** (same as `DATABASE_URL` for local Docker), and `AUTH_SECRET`.
 3. `npm install && npm run setup && npm run dev` → http://localhost:3000
 
-### Netlify
+---
 
-**`DATABASE_URL` is required for the build.** The build runs `prisma migrate deploy`; without `DATABASE_URL` in Netlify’s environment, the build fails with `P1012` / “Environment variable not found: DATABASE_URL”.
+## Deploy on Vercel
 
-1. Create a **Postgres** database (e.g. [Neon](https://neon.tech)) and copy the connection string (include `?sslmode=require` if your provider expects it).
-2. In [Netlify](https://app.netlify.com): **Add new site** → Import from Git → this repo.
-3. **Before** triggering a deploy: **Site configuration → Environment variables** → add at least:
-   - **`DATABASE_URL`** — your Postgres URL (required for build)
-   - `AUTH_SECRET` — long random string (`openssl rand -base64 32`)
-   - `AUTH_URL` — `https://<your-site>.netlify.app` (use your real Netlify URL after first deploy, or set after you know it)
-   - `NEXT_PUBLIC_SITE_URL` — same as `AUTH_URL`
-   - **Sign-in:** email + password works for everyone (`/auth/signup` → `/auth/signin`). Optionally add:
-     - **Google:** `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` (OAuth redirect `https://<site>/api/auth/callback/google`)
-     - **Magic link:** `EMAIL_SERVER` + `EMAIL_FROM`
-4. **Deploy** (or **Clear cache and deploy** if you already failed once).
-5. After a successful deploy, run **seed** once against production DB (from your machine with prod `DATABASE_URL`): `npx tsx prisma/seed.ts`
-6. Optional: `AFTERHOURS_AUTO_SEED_DISCOVERY=false` on Netlify for production if you don’t want demo discovery auto-seed.
+Vercel runs **`npm run build:ci`** (see `vercel.json`): `prisma migrate deploy` → `prisma generate` → `next build`.  
+Local quick builds use **`npm run build`** (no migrate).
 
-### Sign-in
+### 1. Push to GitHub
 
-| Method | Who can use it |
-|--------|----------------|
-| **Email + password** | Anyone: sign up at `/auth/signup`, then sign in (no extra env vars). |
-| **Google** | Any Google account, if `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` are set. |
-| **Email magic link** | Any email address, if `EMAIL_SERVER` (and usually `EMAIL_FROM`) is set. |
+Ensure the **AfterHours** app is at the repo root **or** set the Vercel **Root Directory** to `afterhours` if this app lives in a monorepo subfolder.
 
-Local `npm run setup` seeds demo users at `@demo.afterhours.local`; sign in with that email and the password from `SEED_DEMO_LOGIN_PASSWORD` (default `afterhours-demo` — see `.env.example`).
+### 2. Import in Vercel
+
+[Vercel Dashboard](https://vercel.com) → **Add New** → **Project** → import the Git repository.  
+Framework preset: **Next.js** (auto-detected from `vercel.json`). **Node.js** version follows **`engines.node`** in `package.json` (≥20.9); locally you can use `nvm use` with `.nvmrc`.
+
+### 3. Environment variables (Production)
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | **Yes** | PostgreSQL URL for **queries** (use a **pooled** URL on Neon, or your pooler). Required at build and runtime. |
+| `DIRECT_URL` | **Yes** | **Direct** Postgres URL (non-pooler) for **`prisma migrate deploy`** during build. On Neon, copy the “direct” connection string; if you only have one URL, set `DIRECT_URL` to the **same** value as `DATABASE_URL`. |
+| `AUTH_SECRET` | **Yes** | `openssl rand -base64 32` — signs sessions; must match between deploys. |
+| `AUTH_URL` | **Yes** | Canonical site URL, e.g. `https://your-project.vercel.app` or `https://yourdomain.com` |
+| `NEXT_PUBLIC_SITE_URL` | **Recommended** | Public URL for metadata and sitemap (use your custom domain when you have one). If omitted on Vercel, `VERCEL_URL` is used automatically for previews and default deployments. |
+
+**Optional**
+
+| Variable | Description |
+|----------|-------------|
+| `NEXTAUTH_SECRET` | Same value as `AUTH_SECRET` if you prefer the legacy name. |
+| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | Google OAuth |
+| `EMAIL_SERVER` / `EMAIL_FROM` | Magic-link email |
+| `AFTERHOURS_AUTO_SEED_DISCOVERY` | `true` only to auto-seed discovery demo data (default off in production). |
+| `SEED_DEMO_LOGIN_PASSWORD` | Only for `npm run db:seed` local/demo users |
+
+### Database & Prisma (Vercel)
+
+- **Build:** `npm run build:ci` runs `prisma migrate deploy` against **`DIRECT_URL`**, then `prisma generate`, then `next build`. The build must reach Postgres from Vercel’s network (allow Neon/Supabase public access or IP rules as needed).
+- **Runtime:** The app uses **`DATABASE_URL`** for Prisma Client (prefer a **pooled** string on Neon to avoid exhausting connections on serverless).
+- **Singleton:** `src/lib/prisma.ts` keeps one `PrismaClient` per serverless isolate to limit open connections.
+- **Demo seed:** Discovery auto-seed is **off** in production unless `AFTERHOURS_AUTO_SEED_DISCOVERY=true`.
+
+### 4. Deploy
+
+Trigger deploy. The first successful build applies pending migrations.
+
+### 5. Post-deploy checks
+
+- `https://<your-domain>/api/auth/providers` includes **`credentials`**.
+- `https://<your-domain>/auth-build.txt` → `credentials-v1` (deploy marker).
+- Sign up → onboarding (if new user) → dashboard → **Host** (`/create`) for a meetup.
+
+### 6. Optional: seed production once
+
+From your machine (with production `DATABASE_URL` in env): `npx tsx prisma/seed.ts`
+
+---
+
+## Auth
+
+| Method | Notes |
+|--------|--------|
+| **Email + password** | `/auth/signup`, `/auth/signin` — default; no OAuth env required. |
+| **Google** | If `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET` are set. |
+| **Magic link** | If `EMAIL_SERVER` (+ `EMAIL_FROM`) is set. |
+
+Local seed users (`@demo.afterhours.local`): run `npm run setup`; password from `SEED_DEMO_LOGIN_PASSWORD` (default `afterhours-demo`).
+
+---
+
+## Production builds locally
+
+`npm run build` runs with `NODE_ENV=production`. You need **`AUTH_SECRET`** (or **`NEXTAUTH_SECRET`**) in `.env`, same as on Vercel, or the build will fail with a clear error.
+
+### Prisma: `DIRECT_URL`
+
+The schema uses **`DIRECT_URL`** for migrations. Add it to `.env` (see `.env.example`). For local Docker or a single connection string, set **`DIRECT_URL` to the same value as `DATABASE_URL`**. Without it, `prisma migrate deploy`, `prisma validate`, and Vercel **`build:ci`** will fail.

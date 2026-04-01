@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { EditGroupForm } from "@/components/discover/EditGroupForm";
 import { getGroupDetail } from "@/data/discovery";
+import { redirectToSignIn } from "@/lib/auth-redirect";
 import { prisma } from "@/lib/prisma";
 
 type Props = { params: Promise<{ groupId: string }> };
@@ -11,28 +12,29 @@ type Props = { params: Promise<{ groupId: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { groupId } = await params;
   const session = await auth();
-  if (!session?.user?.id) return { title: "Edit" };
-  const data = await getGroupDetail(session.user.id, groupId);
+  const userId = session?.user?.id;
+  if (!userId) return { title: "Edit" };
+  const data = await getGroupDetail(userId, groupId);
   if (!data) return { title: "Edit" };
   return { title: `Edit · ${data.group.title}` };
 }
 
 export default async function EditGroupPage({ params }: Props) {
-  const session = await auth();
-  if (!session?.user?.id) return null;
-
   const { groupId } = await params;
-  const data = await getGroupDetail(session.user.id, groupId);
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) redirectToSignIn(`/group/${groupId}/edit`);
+  const data = await getGroupDetail(userId, groupId);
   if (!data) notFound();
 
   const { group } = data;
-  if (group.creatorUserId !== session.user.id) notFound();
+  if (group.creatorUserId !== userId) notFound();
   if (group.groupStatus === "cancelled" || group.groupStatus === "completed") {
     redirect(`/group/${groupId}`);
   }
 
   const otherJoins = await prisma.groupJoin.count({
-    where: { groupId, userId: { not: session.user.id } },
+    where: { groupId, userId: { not: userId } },
   });
   const canDelete = otherJoins === 0;
 

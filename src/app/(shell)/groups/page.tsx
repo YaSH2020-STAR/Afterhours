@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { DiscoverDashboard } from "@/components/discover/DiscoverDashboard";
 import { getDashboardData } from "@/data/dashboard";
 import { getDiscoveryContext } from "@/data/discovery";
+import { redirectToSignIn } from "@/lib/auth-redirect";
 import { greetingForHour } from "@/lib/greeting";
 import { parseDiscoveryVibe } from "@/lib/discovery-query";
 
@@ -17,17 +18,18 @@ export default async function GroupsPage({
   searchParams: Promise<{ q?: string; vibe?: string }>;
 }) {
   const session = await auth();
-  if (!session?.user?.id) return null;
+  const userId = session?.user?.id;
+  if (!userId) redirectToSignIn("/groups");
 
   const sp = await searchParams;
   const q = typeof sp.q === "string" ? sp.q : "";
   const vibe = parseDiscoveryVibe(typeof sp.vibe === "string" ? sp.vibe : undefined);
 
   const [discovery, dash] = await Promise.all([
-    getDiscoveryContext(session.user.id),
-    getDashboardData(session.user.id),
+    getDiscoveryContext(userId),
+    getDashboardData(userId),
   ]);
-  if (!discovery) return null;
+  if (!discovery) redirectToSignIn("/groups");
 
   const greeting = greetingForHour(new Date().getHours());
   const podSummary =
@@ -46,7 +48,7 @@ export default async function GroupsPage({
       initialTab="groups"
       displayCity={discovery.displayCity}
       userFirstName={firstName}
-      viewerId={session.user.id}
+      viewerId={userId}
       viewerLocation={discovery.viewerLocation}
       venues={discovery.venues}
       groups={discovery.groups}
