@@ -19,11 +19,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.sub = user.id;
       }
       if (token.sub) {
-        const u = await prisma.user.findUnique({
-          where: { id: token.sub },
-          select: { onboardingCompleted: true },
-        });
-        if (u) token.onboardingCompleted = u.onboardingCompleted;
+        try {
+          const u = await prisma.user.findUnique({
+            where: { id: token.sub },
+            select: { onboardingCompleted: true },
+          });
+          if (u) token.onboardingCompleted = u.onboardingCompleted;
+        } catch (e) {
+          console.error("[auth jwt] onboarding lookup failed", e);
+          token.onboardingCompleted = false;
+        }
       }
       return token;
     },
@@ -61,20 +66,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const email = (credentials?.email as string | undefined)?.trim().toLowerCase();
-        const password = credentials?.password as string | undefined;
-        if (!email || !password) return null;
+        try {
+          const email = (credentials?.email as string | undefined)?.trim().toLowerCase();
+          const password = credentials?.password as string | undefined;
+          if (!email || !password) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email },
-          select: { id: true, email: true, name: true, passwordHash: true },
-        });
-        if (!user?.passwordHash) return null;
+          const user = await prisma.user.findUnique({
+            where: { email },
+            select: { id: true, email: true, name: true, passwordHash: true },
+          });
+          if (!user?.passwordHash) return null;
 
-        const ok = await bcrypt.compare(password, user.passwordHash);
-        if (!ok) return null;
+          const ok = await bcrypt.compare(password, user.passwordHash);
+          if (!ok) return null;
 
-        return { id: user.id, email: user.email, name: user.name };
+          return { id: user.id, email: user.email, name: user.name };
+        } catch (e) {
+          console.error("[auth credentials] authorize failed", e);
+          return null;
+        }
       },
     }),
   ],

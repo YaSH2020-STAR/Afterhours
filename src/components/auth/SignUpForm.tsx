@@ -32,6 +32,15 @@ export function SignUpForm() {
           setMessage(reg.error);
           return;
         }
+      } catch (err) {
+        console.error("[signup] register", err);
+        setMessage(
+          "Could not create your account. Check DATABASE_URL is set for production and run prisma migrate deploy.",
+        );
+        return;
+      }
+
+      try {
         const res = await signIn("credentials", {
           email: email.trim().toLowerCase(),
           password,
@@ -39,16 +48,19 @@ export function SignUpForm() {
           callbackUrl,
         });
         if (!res?.ok || res.error) {
-          setMessage("Account created. Sign in with your email and password.");
-          router.push("/auth/signin");
+          setMessage(
+            "Account created. Sign in below — auto sign-in did not complete (often AUTH_SECRET or AUTH_URL on Netlify).",
+          );
+          router.push(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
           return;
         }
         window.location.assign(callbackUrl);
       } catch (err) {
-        console.error(err);
+        console.error("[signup] signIn", err);
         setMessage(
-          "Request failed. If this persists, confirm DATABASE_URL and AUTH_SECRET are set on the server and the database has the latest migrations.",
+          "Account created. Please sign in manually. If sign-in keeps failing, set AUTH_SECRET and AUTH_URL in Netlify to match this site.",
         );
+        router.push(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       }
     });
   }
