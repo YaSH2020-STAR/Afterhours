@@ -5,6 +5,14 @@ import { getAuthSecret } from "@/lib/auth-secret";
 
 const publicPrefixes = ["/auth", "/login", "/signup", "/waitlist", "/safety", "/demo"] as const;
 
+/** Auth.js uses `__Secure-` cookie names on HTTPS; getToken must match or the session is always null. */
+function useSecureSessionCookie(req: NextRequest): boolean {
+  const forwarded = req.headers.get("x-forwarded-proto");
+  if (forwarded === "https") return true;
+  if (forwarded === "http") return false;
+  return req.nextUrl.protocol === "https:";
+}
+
 function isPublicPath(pathname: string) {
   if (pathname === "/") return true;
   if (pathname.startsWith("/api/waitlist")) return true;
@@ -26,6 +34,7 @@ export default async function middleware(req: NextRequest) {
   const token = await getToken({
     req,
     secret: getAuthSecret(),
+    secureCookie: useSecureSessionCookie(req),
   });
 
   if (!token) {
