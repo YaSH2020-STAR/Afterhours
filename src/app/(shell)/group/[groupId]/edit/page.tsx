@@ -61,6 +61,8 @@ export default async function EditGroupPage({ params }: Props) {
     spotsLeft: Math.max(0, group.maxPeople - group.joinedCount),
     userStatus: null,
     creatorUserId: group.creatorUserId,
+    hostName: null,
+    hostImage: null,
     groupStatus: group.groupStatus,
   };
 
