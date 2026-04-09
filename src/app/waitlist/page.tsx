@@ -1,16 +1,6 @@
-import type { Metadata } from "next";
-import { MarketingLayout } from "@/components/layout/MarketingLayout";
-import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { permanentRedirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Waitlist intake",
-  description: "Email-only waitlist intake for cities as we open pods.",
-};
-
-export default function WaitlistPage() {
-  return (
-    <MarketingLayout>
-      <OnboardingWizard />
-    </MarketingLayout>
-  );
+/** Legacy marketing URL — accounts are open; sign up directly. */
+export default function WaitlistRedirectPage() {
+  permanentRedirect("/auth/signup");
 }

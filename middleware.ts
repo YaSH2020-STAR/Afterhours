@@ -1,21 +1,11 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
-import { getAuthSecret } from "@/lib/auth-secret";
+import { getMiddlewareSessionToken } from "@/lib/middleware-session";
 
 const publicPrefixes = ["/auth", "/login", "/signup", "/waitlist", "/safety", "/demo"] as const;
 
-/** Auth.js uses `__Secure-` cookie names on HTTPS; getToken must match or the session is always null. */
-function useSecureSessionCookie(req: NextRequest): boolean {
-  const forwarded = req.headers.get("x-forwarded-proto");
-  if (forwarded === "https") return true;
-  if (forwarded === "http") return false;
-  return req.nextUrl.protocol === "https:";
-}
-
 function isPublicPath(pathname: string) {
   if (pathname === "/") return true;
-  if (pathname.startsWith("/api/waitlist")) return true;
   if (pathname.startsWith("/api/auth")) return true;
   return publicPrefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
@@ -31,11 +21,7 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = await getToken({
-    req,
-    secret: getAuthSecret(),
-    secureCookie: useSecureSessionCookie(req),
-  });
+  const token = await getMiddlewareSessionToken(req);
 
   if (!token) {
     const signIn = new URL("/auth/signin", req.nextUrl.origin);

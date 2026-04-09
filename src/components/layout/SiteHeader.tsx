@@ -36,10 +36,10 @@ export function SiteHeader() {
             Sign in
           </Link>
           <Link
-            href="/waitlist"
+            href="/auth/signup"
             className="rounded-lg border-2 border-ah-accent bg-ah-accent px-3 py-1.5 text-sm font-semibold text-white hover:border-ah-accent-soft hover:bg-ah-accent-soft"
           >
-            Waitlist
+            Sign up
           </Link>
         </div>
       </div>

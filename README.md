@@ -7,7 +7,7 @@ Next.js, Prisma, **PostgreSQL** (Docker locally, Neon/Supabase in production).
 ## Run locally
 
 1. `docker compose up -d` (Postgres on port 5432), or use a hosted DB URL in `.env`.
-2. `cp .env.example .env` — set `DATABASE_URL`, **`DIRECT_URL`** (same as `DATABASE_URL` for local Docker), and `AUTH_SECRET`.
+2. `cp .env.example .env` — set `DATABASE_URL` and `AUTH_SECRET`.
 3. `npm install && npm run setup && npm run dev` → http://localhost:3000
 
 ---
@@ -30,8 +30,7 @@ Framework preset: **Next.js** (auto-detected from `vercel.json`). **Node.js** ve
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `DATABASE_URL` | **Yes** | PostgreSQL URL for **queries** (use a **pooled** URL on Neon, or your pooler). Required at build and runtime. |
-| `DIRECT_URL` | **Yes** | **Direct** Postgres URL (non-pooler) for **`prisma migrate deploy`** during build. On Neon, copy the “direct” connection string; if you only have one URL, set `DIRECT_URL` to the **same** value as `DATABASE_URL`. |
+| `DATABASE_URL` | **Yes** | PostgreSQL URL for Prisma (use Neon’s pooled string on serverless). Required at build and runtime. |
 | `AUTH_SECRET` | **Yes** | `openssl rand -base64 32` — signs sessions; must match between deploys. |
 | `AUTH_URL` | **Yes** | Canonical site URL, e.g. `https://your-project.vercel.app` or `https://yourdomain.com` |
 | `NEXT_PUBLIC_SITE_URL` | **Recommended** | Public URL for metadata and sitemap (use your custom domain when you have one). If omitted on Vercel, `VERCEL_URL` is used automatically for previews and default deployments. |
@@ -48,8 +47,8 @@ Framework preset: **Next.js** (auto-detected from `vercel.json`). **Node.js** ve
 
 ### Database & Prisma (Vercel)
 
-- **Build:** `npm run build:ci` runs `prisma migrate deploy` against **`DIRECT_URL`**, then `prisma generate`, then `next build`. The build must reach Postgres from Vercel’s network (allow Neon/Supabase public access or IP rules as needed).
-- **Runtime:** The app uses **`DATABASE_URL`** for Prisma Client (prefer a **pooled** string on Neon to avoid exhausting connections on serverless).
+- **Build:** `npm run build:ci` runs `prisma migrate deploy` (uses **`DATABASE_URL`**), then `prisma generate`, then `next build`. The build must reach Postgres from Vercel’s network (allow Neon/Supabase public access or IP rules as needed).
+- **Runtime:** Same **`DATABASE_URL`** for Prisma Client (prefer a **pooled** string on Neon for serverless).
 - **Singleton:** `src/lib/prisma.ts` keeps one `PrismaClient` per serverless isolate to limit open connections.
 - **Demo seed:** Discovery auto-seed is **off** in production unless `AFTERHOURS_AUTO_SEED_DISCOVERY=true`.
 
@@ -85,6 +84,6 @@ Local seed users (`@demo.afterhours.local`): run `npm run setup`; password from 
 
 `npm run build` runs with `NODE_ENV=production`. You need **`AUTH_SECRET`** (or **`NEXTAUTH_SECRET`**) in `.env`, same as on Vercel, or the build will fail with a clear error.
 
-### Prisma: `DIRECT_URL`
+### Prisma
 
-The schema uses **`DIRECT_URL`** for migrations. Add it to `.env` (see `.env.example`). For local Docker or a single connection string, set **`DIRECT_URL` to the same value as `DATABASE_URL`**. Without it, `prisma migrate deploy`, `prisma validate`, and Vercel **`build:ci`** will fail.
+`DATABASE_URL` must be set in `.env` locally (Prisma CLI reads `.env`, not only `.env.local`) and on Vercel for **`build:ci`**.

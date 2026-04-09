@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { EthnicityInclusionPrinciples } from "@/components/landing/EthnicityInclusionPrinciples";
-import { WaitlistForm } from "@/components/forms/WaitlistForm";
 import { PodDiagram } from "@/components/landing/PodDiagram";
 
 export function HomeSections() {
@@ -21,10 +20,10 @@ export function HomeSections() {
                 Sign in
               </Link>
               <Link
-                href="/waitlist"
+                href="/auth/signup"
                 className="rounded-lg border-2 border-ah-border px-5 py-2.5 font-semibold text-ah-ink hover:border-ah-accent"
               >
-                Waitlist
+                Sign up
               </Link>
             </div>
           </div>
@@ -314,12 +313,23 @@ export function HomeSections() {
 
       <section id="join" className="bg-[linear-gradient(160deg,color-mix(in_srgb,var(--accent)_20%,var(--bg))_0%,var(--bg)_45%)] px-4 py-16 sm:px-6">
         <div className="mx-auto max-w-[720px] text-center">
-          <h2 className="font-display text-xl font-bold text-ah-ink sm:text-2xl">Waitlist</h2>
+          <h2 className="font-display text-xl font-bold text-ah-ink sm:text-2xl">Get started</h2>
           <p className="mx-auto mt-2 text-sm text-ah-muted">
-            Or <Link href="/waitlist" className="text-ah-accent hover:underline">full intake</Link>.
+            Create an account to browse meetups near you and host your own.
           </p>
-          <div className="mx-auto mt-8 max-w-[420px] rounded-xl border border-ah-border bg-ah-card p-6 text-left shadow-sm">
-            <WaitlistForm idPrefix="home" />
+          <div className="mx-auto mt-8 flex flex-wrap justify-center gap-3">
+            <Link
+              href="/auth/signup"
+              className="rounded-lg border-2 border-ah-accent bg-ah-accent px-6 py-3 font-semibold text-white hover:bg-ah-accent-soft"
+            >
+              Create free account
+            </Link>
+            <Link
+              href="/auth/signin"
+              className="rounded-lg border-2 border-ah-border px-6 py-3 font-semibold text-ah-ink hover:border-ah-accent"
+            >
+              Sign in
+            </Link>
           </div>
         </div>
       </section>

@@ -8,7 +8,7 @@ const links = [
   { href: "/#how-it-works", label: "How it works" },
   { href: "/#why-afterhours", label: "Why AfterHours" },
   { href: "/safety", label: "Safety" },
-  { href: "/#waitlist", label: "Waitlist" },
+  { href: "/#get-started", label: "Get started" },
 ] as const;
 
 export function MarketingNav() {
@@ -47,8 +47,14 @@ export function MarketingNav() {
             </Link>
           ))}
           <Link
+            href="/auth/signup"
+            className="ml-2 rounded-full border border-ah-accent bg-ah-accent px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-ah-accent-soft active:translate-y-0"
+          >
+            Sign up
+          </Link>
+          <Link
             href="/auth/signin"
-            className="ml-2 rounded-full border border-ah-border bg-ah-card px-4 py-2 text-sm font-semibold text-ah-ink shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-ah-accent/40 hover:shadow-md active:translate-y-0"
+            className="rounded-full border border-ah-border bg-ah-card px-4 py-2 text-sm font-semibold text-ah-ink shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-ah-accent/40 hover:shadow-md active:translate-y-0"
           >
             Sign in
           </Link>
@@ -101,8 +107,15 @@ export function MarketingNav() {
                 </Link>
               ))}
               <Link
-                href="/auth/signin"
+                href="/auth/signup"
                 className="mt-2 rounded-full border border-ah-accent bg-ah-accent py-3 text-center text-sm font-semibold text-white"
+                onClick={() => setOpen(false)}
+              >
+                Sign up
+              </Link>
+              <Link
+                href="/auth/signin"
+                className="rounded-full border border-ah-border bg-ah-card py-3 text-center text-sm font-semibold text-ah-ink"
                 onClick={() => setOpen(false)}
               >
                 Sign in

@@ -4,7 +4,7 @@ import { HowItWorksSection } from "./HowItWorksSection";
 import { ComparisonSection } from "./ComparisonSection";
 import { PodPreviewSection } from "./PodPreviewSection";
 import { TestimonialsSection } from "./TestimonialsSection";
-import { WaitlistFinalSection } from "./WaitlistFinalSection";
+import { GetStartedFinalSection } from "./GetStartedFinalSection";
 import { MarketingFooter } from "./MarketingFooter";
 
 export function MarketingLanding() {
@@ -20,7 +20,7 @@ export function MarketingLanding() {
         <ComparisonSection />
         <PodPreviewSection />
         <TestimonialsSection />
-        <WaitlistFinalSection />
+        <GetStartedFinalSection />
       </main>
       <MarketingFooter />
     </>

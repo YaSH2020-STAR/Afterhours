@@ -1,8 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { seedDiscoveryDemoData } from "../src/lib/demo-discovery-data";
-import { PHOENIX_DEMO_SAMPLES, toPrismaSeedData } from "../src/data/phoenix-demo-samples";
-
 const prisma = new PrismaClient();
 
 const DEMO_DOMAIN = "demo.afterhours.local";
@@ -165,24 +163,8 @@ async function seedPods() {
   console.log(`Seeded pod "${pod.name}" (${users.length} members), season ${season.id}, week ~${weekIndex}.`);
 }
 
-async function seedWaitlist() {
-  const demoDomain = "@demo.afterhours.example";
-  await prisma.waitlistSubmission.deleteMany({
-    where: { email: { endsWith: demoDomain } },
-  });
-
-  for (const sample of PHOENIX_DEMO_SAMPLES) {
-    await prisma.waitlistSubmission.create({
-      data: toPrismaSeedData(sample),
-    });
-  }
-
-  console.log(`Seeded ${PHOENIX_DEMO_SAMPLES.length} Phoenix waitlist rows (${demoDomain}).`);
-}
-
 async function main() {
   await seedPods();
-  await seedWaitlist();
   await seedDiscoveryDemoData(prisma);
   console.log("Discovery demo data ensured (Open Tables + Interest Groups).");
 }

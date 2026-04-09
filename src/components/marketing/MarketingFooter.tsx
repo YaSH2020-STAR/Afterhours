@@ -18,8 +18,8 @@ export function MarketingFooter() {
           <Link href="/auth/signin" className="transition-colors hover:text-ah-ink">
             Sign in
           </Link>
-          <Link href="/waitlist" className="transition-colors hover:text-ah-ink">
-            Full intake
+          <Link href="/auth/signup" className="transition-colors hover:text-ah-ink">
+            Join
           </Link>
         </nav>
       </div>

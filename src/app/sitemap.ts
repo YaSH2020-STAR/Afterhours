@@ -4,7 +4,7 @@ import { getPublicSiteUrl } from "@/lib/site-url";
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = getPublicSiteUrl();
   const root = new URL(base);
-  const paths = ["", "/waitlist", "/safety", "/auth/signin"];
+  const paths = ["", "/safety", "/auth/signin", "/auth/signup"];
   return paths.map((p) => ({
     url: new URL(p, root).toString(),
     lastModified: new Date(),

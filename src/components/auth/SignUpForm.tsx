@@ -14,13 +14,16 @@ export function SignUpForm() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    setStatus("idle");
     setMessage(null);
     if (password !== confirm) {
+      setStatus("error");
       setMessage("Passwords do not match.");
       return;
     }
@@ -41,15 +44,18 @@ export function SignUpForm() {
         try {
           data = (await res.json()) as { ok?: boolean; error?: string };
         } catch {
+          setStatus("error");
           setMessage("Could not read server response. Try again.");
           return;
         }
         if (!res.ok || !data.ok) {
+          setStatus("error");
           setMessage(data.error ?? "Could not create your account. Try again.");
           return;
         }
       } catch (err) {
         console.error("[signup] register fetch", err);
+        setStatus("error");
         setMessage("Network error. Check your connection and try again.");
         return;
       }
@@ -66,6 +72,7 @@ export function SignUpForm() {
           callbackUrl: absoluteCallback,
         });
         if (!login.ok) {
+          setStatus("success");
           setMessage("Account created. Sign in below with the same password.");
           router.push(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
           return;
@@ -73,6 +80,7 @@ export function SignUpForm() {
         window.location.assign(login.url);
       } catch (err) {
         console.error("[signup] login", err);
+        setStatus("success");
         setMessage("Account created. Please sign in below.");
         router.push(`/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       }
@@ -158,7 +166,14 @@ export function SignUpForm() {
           Sign in
         </Link>
       </p>
-      {message && <p className="text-sm text-ah-accent">{message}</p>}
+      {message && (
+        <p
+          role="status"
+          className={`text-sm ${status === "error" ? "text-red-700" : status === "success" ? "text-emerald-700" : "text-ah-accent"}`}
+        >
+          {message}
+        </p>
+      )}
     </form>
   );
 }

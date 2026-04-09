@@ -83,10 +83,10 @@ export function HeroSection() {
               className="mt-8 flex flex-wrap gap-3"
             >
               <Link
-                href="/#waitlist"
+                href="/auth/signup"
                 className="group inline-flex items-center justify-center rounded-full bg-ah-accent px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-ah-accent/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-ah-accent-soft hover:shadow-xl hover:shadow-ah-accent/30 active:translate-y-0"
               >
-                Join waitlist
+                Join
                 <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-0.5">
                   →
                 </span>

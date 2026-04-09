@@ -12,12 +12,18 @@ export async function signInWithPasswordClient(input: {
   /** Absolute URL (same origin) or path starting with `/` */
   callbackUrl: string;
 }): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
-  const result = await signIn("credentials", {
-    email: input.email,
-    password: input.password,
-    redirect: false,
-    callbackUrl: input.callbackUrl,
-  });
+  let result: Awaited<ReturnType<typeof signIn>>;
+  try {
+    result = await signIn("credentials", {
+      email: input.email,
+      password: input.password,
+      redirect: false,
+      callbackUrl: input.callbackUrl,
+    });
+  } catch (e) {
+    console.error("[signInWithPasswordClient] signIn threw", e);
+    return { ok: false, error: "Sign in failed. Try again." };
+  }
 
   if (!result) {
     return { ok: false, error: "Sign in failed. Try again." };
@@ -37,9 +43,16 @@ export async function signInWithPasswordClient(input: {
     return { ok: false, error: `Sign in failed (${result.error}).` };
   }
 
-  if (result.ok && result.url) {
-    return { ok: true, url: result.url };
+  if (result.ok) {
+    if (result.url) {
+      try {
+        return { ok: true, url: new URL(result.url, window.location.origin).href };
+      } catch {
+        return { ok: true, url: input.callbackUrl };
+      }
+    }
+    return { ok: true, url: input.callbackUrl };
   }
 
-  return { ok: true, url: input.callbackUrl };
+  return { ok: false, error: "Sign in failed. Try again." };
 }
