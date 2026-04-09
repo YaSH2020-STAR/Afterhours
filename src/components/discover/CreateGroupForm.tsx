@@ -43,6 +43,7 @@ export function CreateGroupForm() {
             const r = await createInterestGroup({
               title: String(fd.get("title") ?? ""),
               category: String(fd.get("category") ?? ""),
+              city: String(fd.get("city") ?? ""),
               date: String(fd.get("date") ?? ""),
               time: String(fd.get("time") ?? ""),
               endTime: String(fd.get("endTime") ?? "") || undefined,
@@ -124,6 +125,17 @@ export function CreateGroupForm() {
       <label className="block space-y-1">
         <span className="text-sm font-medium text-ah-ink">End time (optional)</span>
         <input name="endTime" type="time" className={fieldClass} />
+      </label>
+
+      <label className="block space-y-1">
+        <span className="text-sm font-medium text-ah-ink">City</span>
+        <input
+          name="city"
+          required
+          defaultValue={DISCOVERY_CITY}
+          maxLength={120}
+          className={fieldClass}
+        />
       </label>
 
       <label className="block space-y-1">

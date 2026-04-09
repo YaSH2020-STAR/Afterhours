@@ -1,7 +1,6 @@
 "use server";
 
 import { auth } from "@/auth";
-import { DISCOVERY_CITY } from "@/lib/discovery-constants";
 import { combineLocalDateTime } from "@/lib/meetup-datetime";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -10,6 +9,7 @@ import { z } from "zod";
 const createGroupSchema = z.object({
   title: z.string().min(2).max(80),
   category: z.string().min(1).max(40),
+  city: z.string().min(2).max(120),
   date: z.string(),
   time: z.string(),
   endTime: z.string().optional(),
@@ -621,7 +621,7 @@ export async function createInterestGroup(raw: z.infer<typeof createGroupSchema>
     data: {
       title: rest.title,
       category: rest.category,
-      city: DISCOVERY_CITY,
+      city: rest.city.trim(),
       neighborhood: rest.neighborhood || null,
       address: rest.address?.trim() || null,
       locationLabel: rest.locationLabel,

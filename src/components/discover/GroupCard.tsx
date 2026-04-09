@@ -86,6 +86,19 @@ export function GroupCard({ group, viewerId }: { group: GroupForUi; viewerId: st
     group.userStatus &&
     ["JOINED", "HEADING", "CHECKED_IN", "WAITLIST", "INTERESTED"].includes(group.userStatus);
 
+  function shareMeetup() {
+    const url = `${window.location.origin}/group/${group.id}`;
+    const payload = { title: group.title, text: `Meetup on AfterHours: ${group.title}`, url };
+    if (navigator.share) {
+      navigator.share(payload).catch(() => undefined);
+      return;
+    }
+    navigator.clipboard
+      .writeText(url)
+      .then(() => console.info("[share] copied"))
+      .catch(() => undefined);
+  }
+
   return (
     <article className="card-consumer-gradient group/card overflow-hidden rounded-3xl bg-gradient-to-b from-[var(--surface-elevated)] to-ah-bg-alt/45">
       <div
@@ -129,6 +142,32 @@ export function GroupCard({ group, viewerId }: { group: GroupForUi; viewerId: st
         <div className="mt-5 flex items-center gap-2.5 rounded-2xl bg-black/[0.03] px-3.5 py-2.5 ring-1 ring-black/[0.05]">
           <IconCalendar className="h-[18px] w-[18px] shrink-0 text-ah-accent/90" />
           <p className="text-sm font-semibold text-ah-ink">{fmtWhen(group.startsAt)}</p>
+        </div>
+
+        <div className="mt-4 flex items-center gap-2">
+          {group.hostImage ? (
+            <img
+              src={group.hostImage}
+              alt={group.hostName ? `${group.hostName} profile` : "Host profile"}
+              className="h-8 w-8 rounded-full border border-ah-border object-cover"
+            />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-ah-border bg-ah-bg-alt text-[10px] text-ah-muted">
+              Host
+            </div>
+          )}
+          {group.creatorUserId ? (
+            <p className="text-xs text-ah-muted">
+              Hosted by{" "}
+              <Link href={`/u/${group.creatorUserId}`} className="font-semibold text-ah-ink hover:underline">
+                {group.hostName ?? "AfterHours member"}
+              </Link>
+            </p>
+          ) : (
+            <p className="text-xs text-ah-muted">
+              Hosted by <span className="font-semibold text-ah-ink">{group.hostName ?? "AfterHours member"}</span>
+            </p>
+          )}
         </div>
 
         {group.description && (
@@ -294,6 +333,13 @@ export function GroupCard({ group, viewerId }: { group: GroupForUi; viewerId: st
             Chat
             <IconArrowRight className="h-3.5 w-3.5 opacity-70 transition group-hover/card:translate-x-0.5 group-hover/card:opacity-100" />
           </Link>
+          <button
+            type="button"
+            onClick={shareMeetup}
+            className="discovery-btn rounded-full px-4 py-2.5 text-sm font-semibold text-ah-muted ring-1 ring-black/[0.12] hover:bg-black/[0.04]"
+          >
+            Share
+          </button>
         </div>
       </div>
     </article>

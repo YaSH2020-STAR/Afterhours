@@ -8,6 +8,11 @@ import { z } from "zod";
 const schema = z.object({
   name: z.string().min(1).max(80),
   bio: z.string().max(500).optional(),
+  imageDataUrl: z
+    .string()
+    .regex(/^data:image\/(png|jpeg|webp);base64,/i, "Profile photo must be PNG, JPG, or WEBP.")
+    .max(1_500_000, "Profile photo is too large.")
+    .optional(),
 });
 
 export async function updateProfile(input: z.infer<typeof schema>) {
@@ -22,6 +27,7 @@ export async function updateProfile(input: z.infer<typeof schema>) {
     data: {
       name: parsed.data.name,
       bio: parsed.data.bio || null,
+      image: parsed.data.imageDataUrl ?? undefined,
     },
   });
 

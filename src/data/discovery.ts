@@ -64,6 +64,8 @@ export type GroupForUi = {
   spotsLeft: number;
   userStatus: string | null;
   creatorUserId: string | null;
+  hostName: string | null;
+  hostImage: string | null;
   groupStatus: string;
   /** FIFO position when viewer is on waitlist (1 = next). Set on My Plans / detail when applicable. */
   yourWaitlistPosition?: number | null;
@@ -91,6 +93,7 @@ function mapGroupRow(
     chatEnabled: boolean;
     chatExpiresAt: Date | null;
     creatorUserId: string | null;
+    creator: { name: string | null; image: string | null } | null;
     groupStatus: string;
   },
   groupMap: Record<string, string>,
@@ -118,6 +121,8 @@ function mapGroupRow(
     spotsLeft: Math.max(0, g.maxPeople - g.joinedCount),
     userStatus: groupMap[g.id] ?? null,
     creatorUserId: g.creatorUserId,
+    hostName: g.creator?.name ?? null,
+    hostImage: g.creator?.image ?? null,
     groupStatus: g.groupStatus,
   };
 }
@@ -209,10 +214,10 @@ export async function getDiscoveryContext(userId: string): Promise<DiscoveryCont
       }),
       prisma.interestGroup.findMany({
         where: {
-          city: DISCOVERY_CITY,
           isPublic: true,
           groupStatus: { in: ["open", "full"] },
         },
+        include: { creator: { select: { name: true, image: true } } },
         orderBy: { startsAt: "asc" },
       }),
       prisma.venueRSVP.findMany({ where: { userId } }),
@@ -379,11 +384,12 @@ export async function getMyPlansContext(userId: string) {
     const [joins, created] = await Promise.all([
       prisma.groupJoin.findMany({
         where: { userId },
-        include: { group: true },
+        include: { group: { include: { creator: { select: { name: true, image: true } } } } },
         orderBy: { joinedAt: "desc" },
       }),
       prisma.interestGroup.findMany({
         where: { creatorUserId: userId },
+        include: { creator: { select: { name: true, image: true } } },
         orderBy: { startsAt: "asc" },
       }),
     ]);

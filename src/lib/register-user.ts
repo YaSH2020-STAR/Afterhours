@@ -7,6 +7,11 @@ const baseSchema = z.object({
   name: z.string().trim().min(1, "Name is required.").max(120),
   email: z.string().email("Enter a valid email.").transform((s) => s.trim().toLowerCase()),
   password: z.string().min(8, "Password must be at least 8 characters.").max(200),
+  imageDataUrl: z
+    .string()
+    .regex(/^data:image\/(png|jpeg|webp);base64,/i, "Profile photo must be PNG, JPG, or WEBP.")
+    .max(1_500_000, "Profile photo is too large.")
+    .optional(),
 });
 
 const withConfirmSchema = baseSchema.extend({
@@ -46,7 +51,7 @@ export async function registerUserWithPassword(input: unknown): Promise<Register
       return { ok: false, error: first };
     }
 
-    const { name, email, password } = parsed.data;
+    const { name, email, password, imageDataUrl } = parsed.data;
     let passwordHash: string;
     try {
       passwordHash = await bcrypt.hash(password, 12);
@@ -61,6 +66,7 @@ export async function registerUserWithPassword(input: unknown): Promise<Register
           email,
           name,
           passwordHash,
+          image: imageDataUrl ?? null,
           onboardingCompleted: false,
         },
       });

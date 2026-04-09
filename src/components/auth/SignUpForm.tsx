@@ -14,9 +14,46 @@ export function SignUpForm() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  async function toAvatarDataUrl(file: File): Promise<string> {
+    if (!file.type.startsWith("image/")) {
+      throw new Error("Please choose an image file.");
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error("Image must be under 5 MB.");
+    }
+    const raw = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error("Could not read image."));
+      reader.readAsDataURL(file);
+    });
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const el = new Image();
+      el.onload = () => resolve(el);
+      el.onerror = () => reject(new Error("Could not load image."));
+      el.src = raw;
+    });
+    const longest = Math.max(img.width, img.height);
+    const scale = longest > 640 ? 640 / longest : 1;
+    const w = Math.max(1, Math.round(img.width * scale));
+    const h = Math.max(1, Math.round(img.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Could not process image.");
+    ctx.drawImage(img, 0, 0, w, h);
+    const compressed = canvas.toDataURL("image/jpeg", 0.82);
+    if (compressed.length > 1_500_000) {
+      throw new Error("Profile photo is too large. Try a smaller image.");
+    }
+    return compressed;
+  }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,6 +75,7 @@ export function SignUpForm() {
             email,
             password,
             confirmPassword: confirm,
+            imageDataUrl: avatarDataUrl ?? undefined,
           }),
         });
         let data: { ok?: boolean; error?: string };
@@ -116,6 +154,40 @@ export function SignUpForm() {
         required
         autoComplete="email"
       />
+      <div>
+        <label className="block text-sm font-semibold text-ah-ink" htmlFor="su-avatar">
+          Profile photo (optional)
+        </label>
+        <input
+          id="su-avatar"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          className="mt-1 w-full rounded-lg border border-ah-border px-3 py-2 text-sm"
+          onChange={(e) => {
+            const file = e.currentTarget.files?.[0];
+            if (!file) {
+              setAvatarDataUrl(null);
+              return;
+            }
+            setStatus("idle");
+            setMessage(null);
+            toAvatarDataUrl(file)
+              .then((dataUrl) => setAvatarDataUrl(dataUrl))
+              .catch((err: unknown) => {
+                setAvatarDataUrl(null);
+                setStatus("error");
+                setMessage(err instanceof Error ? err.message : "Could not process image.");
+              });
+          }}
+        />
+        {avatarDataUrl && (
+          <img
+            src={avatarDataUrl}
+            alt="Profile preview"
+            className="mt-3 h-14 w-14 rounded-full border border-ah-border object-cover"
+          />
+        )}
+      </div>
       <label className="block text-sm font-semibold text-ah-ink" htmlFor="su-pw">
         Password
       </label>

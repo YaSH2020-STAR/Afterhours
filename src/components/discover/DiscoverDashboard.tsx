@@ -83,6 +83,8 @@ export function DiscoverDashboard({
   const [tab, setTab] = useState<DiscoverTab>(initialTab);
   const [search, setSearch] = useState(initialSearch);
   const [intensity, setIntensity] = useState<DiscoveryIntensity>(initialIntensity);
+  const [cityFilter, setCityFilter] = useState(displayCity);
+  const [dateFilter, setDateFilter] = useState<"any" | "today" | "this_week">("any");
 
   useEffect(() => {
     setTab(initialTab);
@@ -136,9 +138,24 @@ export function DiscoverDashboard({
         g.locationLabel.toLowerCase().includes(q);
       const matchI =
         intensity === "all" || normalize(g.intensity) === intensity || normalize(g.vibe).includes(intensity);
-      return matchQ && matchI;
+      const matchCity = !cityFilter || normalize(g.city) === normalize(cityFilter);
+      const now = new Date();
+      const start = g.startsAt;
+      const sameDay =
+        start.getFullYear() === now.getFullYear() &&
+        start.getMonth() === now.getMonth() &&
+        start.getDate() === now.getDate();
+      const weekEnd = new Date(now);
+      weekEnd.setDate(now.getDate() + 7);
+      const matchDate = dateFilter === "any" || (dateFilter === "today" ? sameDay : start <= weekEnd);
+      return matchQ && matchI && matchCity && matchDate;
     };
-  }, [search, intensity]);
+  }, [search, intensity, cityFilter, dateFilter]);
+
+  const availableCities = useMemo(
+    () => Array.from(new Set(groups.map((g) => g.city).filter(Boolean))).sort((a, b) => a.localeCompare(b)),
+    [groups],
+  );
 
   const filteredGroups = useMemo(() => groups.filter(matchesGroup), [groups, matchesGroup]);
 
@@ -263,6 +280,33 @@ export function DiscoverDashboard({
                   {i === "all" ? "All vibes" : i}
                 </option>
               ))}
+            </select>
+          </label>
+          <label className="sm:w-48">
+            <span className="sr-only">City</span>
+            <select
+              value={cityFilter}
+              onChange={(e) => setCityFilter(e.target.value)}
+              className="focus-ring-consumer h-11 w-full cursor-pointer appearance-none rounded-full border-0 bg-white/85 py-2.5 pl-3 pr-9 text-sm text-ah-ink shadow-[0_4px_24px_-12px_rgba(20,24,22,0.12)] ring-1 ring-black/[0.06] backdrop-blur-sm focus:ring-2 focus:ring-ah-accent/25"
+            >
+              {availableCities.length === 0 && <option value={displayCity}>{displayCity}</option>}
+              {availableCities.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="sm:w-40">
+            <span className="sr-only">Date</span>
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value as "any" | "today" | "this_week")}
+              className="focus-ring-consumer h-11 w-full cursor-pointer appearance-none rounded-full border-0 bg-white/85 py-2.5 pl-3 pr-9 text-sm text-ah-ink shadow-[0_4px_24px_-12px_rgba(20,24,22,0.12)] ring-1 ring-black/[0.06] backdrop-blur-sm focus:ring-2 focus:ring-ah-accent/25"
+            >
+              <option value="any">Any date</option>
+              <option value="today">Today</option>
+              <option value="this_week">This week</option>
             </select>
           </label>
         </div>

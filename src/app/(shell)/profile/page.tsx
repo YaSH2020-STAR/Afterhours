@@ -43,6 +43,7 @@ export default async function ProfilePage() {
       <ProfileForm
         initialName={user.name ?? ""}
         initialBio={user.bio ?? ""}
+        initialImage={user.image ?? ""}
         city={user.city ?? ""}
         interests={interests}
         energy={user.preferences?.energyLevel ?? "MEDIUM"}

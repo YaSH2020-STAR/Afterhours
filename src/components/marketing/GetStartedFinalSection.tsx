@@ -22,7 +22,7 @@ export function GetStartedFinalSection() {
           </h2>
           <p className="mt-3 text-ah-muted">
             Create a free account, add your area, then browse meetups nearby or host one. Open tables and small
-            groups are live—no invite code.
+            groups are live for everyone.
           </p>
         </div>
         <div className="mx-auto mt-10 flex max-w-lg flex-col gap-3 sm:flex-row sm:justify-center">
